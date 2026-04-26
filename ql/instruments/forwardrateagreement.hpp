@@ -10,7 +10,7 @@
  under the terms of the QuantLib license.  You should have received a
  copy of the license along with this program; if not, please email
  <quantlib-dev@lists.sf.net>. The license is also available online at
- <http://quantlib.org/license.shtml>.
+ <https://www.quantlib.org/license.shtml>.
 
  This program is distributed in the hope that it will be useful, but WITHOUT
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
@@ -65,32 +65,6 @@ namespace QuantLib {
     */
     class ForwardRateAgreement: public Instrument {
       public:
-        /*! \deprecated Use one of the other constructors.
-                        Deprecated in version 1.31.
-        */
-        QL_DEPRECATED
-        ForwardRateAgreement(
-            const Date& valueDate,
-            const Date& maturityDate,
-            Position::Type type,
-            Rate strikeForwardRate,
-            Real notionalAmount,
-            const ext::shared_ptr<IborIndex>& index,
-            Handle<YieldTermStructure> discountCurve = {},
-            bool useIndexedCoupon = true);
-
-        /*! \deprecated Use one of the other constructors.
-                        Deprecated in version 1.31.
-        */
-        QL_DEPRECATED
-        ForwardRateAgreement(
-            const Date& valueDate,
-            Position::Type type,
-            Rate strikeForwardRate,
-            Real notionalAmount,
-            const ext::shared_ptr<IborIndex>& index,
-            Handle<YieldTermStructure> discountCurve = {});
-
         /*! When using this constructor, the forward rate will be
             forecast by the passed index.  This corresponds to
             useIndexedCoupon=true in the FraRateHelper class.

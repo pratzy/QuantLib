@@ -11,7 +11,7 @@
  under the terms of the QuantLib license.  You should have received a
  copy of the license along with this program; if not, please email
  <quantlib-dev@lists.sf.net>. The license is also available online at
- <http://quantlib.org/license.shtml>.
+ <https://www.quantlib.org/license.shtml>.
 
  This program is distributed in the hope that it will be useful, but WITHOUT
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
@@ -55,7 +55,7 @@ namespace QuantLib {
             Time t0, Time t1, Size vGrid,
             Real v0, const HestonSLVFokkerPlanckFdmParams& params) {
 
-            std::vector<ext::tuple<Real, Real, bool> > cPoints;
+            std::vector<std::tuple<Real, Real, bool> > cPoints;
 
             const Real v0Density = params.v0Density;
             const Real upperBoundDensity = params.vUpperBoundDensity;
@@ -81,43 +81,40 @@ namespace QuantLib {
                     const Real v0Center = std::log(v0);
 
                     cPoints = {
-                        ext::make_tuple(lowerBound, lowerBoundDensity, false),
-                        ext::make_tuple(v0Center, v0Density, true),
-                        ext::make_tuple(upperBound, upperBoundDensity, false)
+                        std::make_tuple(lowerBound, lowerBoundDensity, false),
+                        std::make_tuple(v0Center, v0Density, true),
+                        std::make_tuple(upperBound, upperBoundDensity, false)
                     };
 
                     return ext::make_shared<Concentrating1dMesher>(
                         lowerBound, upperBound, vGrid, cPoints, 1e-8);
                   }
-                break;
                 case FdmSquareRootFwdOp::Plain:
                   {
                       const Real v0Center = v0;
 
                       cPoints = {
-                          ext::make_tuple(lowerBound, lowerBoundDensity, false),
-                          ext::make_tuple(v0Center, v0Density, true),
-                          ext::make_tuple(upperBound, upperBoundDensity, false)
+                          std::make_tuple(lowerBound, lowerBoundDensity, false),
+                          std::make_tuple(v0Center, v0Density, true),
+                          std::make_tuple(upperBound, upperBoundDensity, false)
                       };
 
                       return ext::make_shared<Concentrating1dMesher>(
                           lowerBound, upperBound, vGrid, cPoints, 1e-8);
                   }
-                break;
                 case FdmSquareRootFwdOp::Power:
                 {
                     const Real v0Center = v0;
 
                     cPoints = {
-                        ext::make_tuple(lowerBound, lowerBoundDensity, false),
-                        ext::make_tuple(v0Center, v0Density, true),
-                        ext::make_tuple(upperBound, upperBoundDensity, false)
+                        std::make_tuple(lowerBound, lowerBoundDensity, false),
+                        std::make_tuple(v0Center, v0Density, true),
+                        std::make_tuple(upperBound, upperBoundDensity, false)
                     };
 
                     return ext::make_shared<Concentrating1dMesher>(
                         lowerBound, upperBound, vGrid, cPoints, 1e-8);
                 }
-                break;
                 default:
                     QL_FAIL("transformation type is not implemented");
             }
@@ -259,7 +256,7 @@ namespace QuantLib {
                                          std::vector<Date> mandatoryDates,
                                          const Real mixingFactor)
     : localVol_(std::move(localVol)), hestonModel_(std::move(hestonModel)), endDate_(endDate),
-      params_(std::move(params)), mandatoryDates_(std::move(mandatoryDates)),
+      params_(params), mandatoryDates_(std::move(mandatoryDates)),
       mixingFactor_(mixingFactor), logging_(logging) {
 
         registerWith(localVol_);

@@ -98,12 +98,12 @@
 
 /* Define this to use std::any instead of boost::any. */
 #ifndef QL_USE_STD_ANY
-#    define QL_USE_STD_ANY
+//#    define QL_USE_STD_ANY
 #endif
 
 /* Define this to use std::optional instead of boost::optional. */
 #ifndef QL_USE_STD_OPTIONAL
-#    define QL_USE_STD_OPTIONAL
+//#    define QL_USE_STD_OPTIONAL
 #endif
 
 /* Define this to use standard smart pointers instead of Boost ones.
@@ -111,17 +111,6 @@
    cause segmentation faults. */
 #ifndef QL_USE_STD_SHARED_PTR
 #    define QL_USE_STD_SHARED_PTR
-#endif
-
-/* Undefine this to use boost::function and boost::bind instead of
-   std::function and std::bind. */
-#ifndef QL_USE_STD_FUNCTION
-//#    define QL_USE_STD_FUNCTION
-#endif
-
-/* Undefine this to use boost::tuple instead of std::tuple. */
-#ifndef QL_USE_STD_TUPLE
-//#    define QL_USE_STD_TUPLE
 #endif
 
 /* Define this to enable the implementation of Null as template functions. */

@@ -12,7 +12,7 @@
  under the terms of the QuantLib license.  You should have received a
  copy of the license along with this program; if not, please email
  <quantlib-dev@lists.sf.net>. The license is also available online at
- <http://quantlib.org/license.shtml>.
+ <https://www.quantlib.org/license.shtml>.
 
  This program is distributed in the hope that it will be useful, but WITHOUT
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
@@ -28,7 +28,7 @@
 
 #include <ql/types.hpp>
 #include <ql/shared_ptr.hpp>
-#include <ql/functional.hpp>
+#include <functional>
 #include <vector>
 
 
@@ -54,7 +54,7 @@ namespace QuantLib {
         FdmCellAveragingInnerValue(ext::shared_ptr<Payoff> payoff,
                                    ext::shared_ptr<FdmMesher> mesher,
                                    Size direction,
-                                   ext::function<Real(Real)> gridMapping = [](Real x){ return x; });
+                                   std::function<Real(Real)> gridMapping = [](Real x){ return x; });
 
         Real innerValue(const FdmLinearOpIterator& iter, Time) override;
         Real avgInnerValue(const FdmLinearOpIterator& iter, Time t) override;
@@ -65,7 +65,7 @@ namespace QuantLib {
         const ext::shared_ptr<Payoff> payoff_;
         const ext::shared_ptr<FdmMesher> mesher_;
         const Size direction_;
-        const ext::function<Real(Real)> gridMapping_;
+        const std::function<Real(Real)> gridMapping_;
 
         std::vector<Real> avgInnerValues_;
     };

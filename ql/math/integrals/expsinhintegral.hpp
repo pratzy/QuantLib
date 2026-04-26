@@ -10,7 +10,7 @@
  under the terms of the QuantLib license.  You should have received a
  copy of the license along with this program; if not, please email
  <quantlib-dev@lists.sf.net>. The license is also available online at
- <http://quantlib.org/license.shtml>.
+ <https://www.quantlib.org/license.shtml>.
 
  This program is distributed in the hope that it will be useful, but WITHOUT
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
@@ -48,7 +48,7 @@ namespace QuantLib {
         exp_sinh_(maxRefinements) {}
 
         // For half-infinite interval [0, \inf), the exp-sinh quadrature is provided by
-        Real integrate(const ext::function<Real(Real)>& f) const {
+        Real integrate(const std::function<Real(Real)>& f) const {
             setNumberOfEvaluations(0);
             Real error;
             Real value = exp_sinh_.integrate(
@@ -60,7 +60,7 @@ namespace QuantLib {
         }
 
       protected:
-        Real integrate(const ext::function<Real(Real)>& f, Real a, Real b)
+        Real integrate(const std::function<Real(Real)>& f, Real a, Real b)
         const override {
             Real error;
             Real value = exp_sinh_.integrate(
@@ -91,8 +91,12 @@ namespace QuantLib {
             QL_FAIL("boost version 1.69 or higher is required in order to use ExpSinhIntegral");
         }
 
+        Real integrate(const std::function<Real(Real)>& f) const {
+            QL_FAIL("boost version 1.69 or higher is required in order to use ExpSinhIntegral");
+        }
+
       protected:
-        Real integrate(const ext::function<Real(Real)>& f, Real a, Real b) const override {
+        Real integrate(const std::function<Real(Real)>& f, Real a, Real b) const override {
             QL_FAIL("boost version 1.69 or higher is required in order to use ExpSinhIntegral");
         }
     };

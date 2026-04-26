@@ -10,7 +10,7 @@
  under the terms of the QuantLib license.  You should have received a
  copy of the license along with this program; if not, please email
  <quantlib-dev@lists.sf.net>. The license is also available online at
- <http://quantlib.org/license.shtml>.
+ <https://www.quantlib.org/license.shtml>.
 
  This program is distributed in the hope that it will be useful, but WITHOUT
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
@@ -20,12 +20,12 @@
 #ifndef quantlib_saddle_point_lossmodel_hpp
 #define quantlib_saddle_point_lossmodel_hpp
 
-#include <ql/tuple.hpp>
 #include <ql/math/solvers1d/brent.hpp>
 #include <ql/math/solvers1d/newton.hpp>
 #include <ql/experimental/credit/basket.hpp>
 #include <ql/experimental/credit/defaultlossmodel.hpp>
 #include <ql/experimental/credit/constantlosslatentmodel.hpp>
+#include <tuple>
 
 namespace QuantLib {
 
@@ -152,11 +152,11 @@ namespace QuantLib {
           Included for optimization, most methods work on expansion of these 
           terms.
           Alternatively use a local private buffer member? */
-        ext::tuple<Real, Real, Real, Real> CumGen0234DerivCond(
+        std::tuple<Real, Real, Real, Real> CumGen0234DerivCond(
             const std::vector<Real>& invUncondProbs,
             Real saddle, 
             const std::vector<Real>&  mktFactor) const;
-        ext::tuple<Real, Real> CumGen02DerivCond(
+        std::tuple<Real, Real> CumGen02DerivCond(
             const std::vector<Real>& invUncondProbs,
             Real saddle, 
             const std::vector<Real>&  mktFactor) const;
@@ -696,7 +696,7 @@ namespace QuantLib {
     }
 
     template<class CP>
-    ext::tuple<Real, Real, Real, Real> SaddlePointLossModel<CP>::CumGen0234DerivCond(
+    std::tuple<Real, Real, Real, Real> SaddlePointLossModel<CP>::CumGen0234DerivCond(
         const std::vector<Real>& invUncondProbs,
         Real saddle, 
         const std::vector<Real>&  mktFactor) const 
@@ -738,7 +738,7 @@ namespace QuantLib {
     }
 
     template<class CP>
-    ext::tuple<Real, Real> SaddlePointLossModel<CP>::CumGen02DerivCond(
+    std::tuple<Real, Real> SaddlePointLossModel<CP>::CumGen02DerivCond(
         const std::vector<Real>& invUncondProbs,
         Real saddle, 
         const std::vector<Real>&  mktFactor) const 
@@ -804,7 +804,7 @@ namespace QuantLib {
         //
         Probability pMaxName = copula_->conditionalDefaultProbabilityInvP(
             invUncondPs[iNamMax], iNamMax, mktFactor);
-        // aproximates the  saddle pt corresponding to this minimum; finds 
+        // approximates the  saddle pt corresponding to this minimum; finds 
         //   it by using only the smallest logistic term and thus this is 
         //   smaller than the true value:
         Real saddleMin = 1./(lgds[iNamMax]/remainingNotional_) * 
@@ -946,13 +946,13 @@ namespace QuantLib {
         Real saddlePt = findSaddle(invUncondProbs,
             relativeLoss, mktFactor);
 
-        ext::tuple<Real, Real, Real, Real> cumulants = 
+        std::tuple<Real, Real, Real, Real> cumulants = 
             CumGen0234DerivCond(invUncondProbs, 
                 saddlePt, mktFactor);
-        Real baseVal = ext::get<0>(cumulants);
-        Real secondVal = ext::get<1>(cumulants);
-        Real K3Saddle = ext::get<2>(cumulants);
-        Real K4Saddle = ext::get<3>(cumulants);
+        Real baseVal = std::get<0>(cumulants);
+        Real secondVal = std::get<1>(cumulants);
+        Real K3Saddle = std::get<2>(cumulants);
+        Real K4Saddle = std::get<3>(cumulants);
 
         Real saddleTo2 = saddlePt * saddlePt;
         Real saddleTo3 = saddleTo2 * saddlePt;
@@ -1035,11 +1035,11 @@ namespace QuantLib {
         Real saddlePt = findSaddle(invUncondPs,
             relativeLoss, mktFactor);
 
-        ext::tuple<Real, Real> cumulants = 
+        std::tuple<Real, Real> cumulants = 
             CumGen02DerivCond(invUncondPs,
                 saddlePt, mktFactor);
-        Real baseVal = ext::get<0>(cumulants);
-        Real secondVal = ext::get<1>(cumulants);
+        Real baseVal = std::get<0>(cumulants);
+        Real secondVal = std::get<1>(cumulants);
 
         Real saddleTo2 = saddlePt * saddlePt;
 
@@ -1090,14 +1090,14 @@ namespace QuantLib {
         Real saddlePt = findSaddle(invUncondPs,
             relativeLoss, mktFactor);
 
-        ext::tuple<Real, Real, Real, Real> cumulants = 
+        std::tuple<Real, Real, Real, Real> cumulants = 
             CumGen0234DerivCond(invUncondPs,
             saddlePt, mktFactor);
         /// access them directly rather than through this copy
-        Real K0Saddle = ext::get<0>(cumulants);
-        Real K2Saddle = ext::get<1>(cumulants);
-        Real K3Saddle = ext::get<2>(cumulants);
-        Real K4Saddle = ext::get<3>(cumulants);
+        Real K0Saddle = std::get<0>(cumulants);
+        Real K2Saddle = std::get<1>(cumulants);
+        Real K3Saddle = std::get<2>(cumulants);
+        Real K4Saddle = std::get<3>(cumulants);
         /* see, for instance R.Martin "he saddle point method and portfolio 
         optionalities." in Risk December 2006 p.93 */
         //\todo the exponentials below are dangerous and agressive, tame them.
@@ -1300,11 +1300,11 @@ namespace QuantLib {
         // Broda and Paolella:
         Real elCondRatio = elCond / remainingNotional_;
 
-        ext::tuple<Real, Real, Real, Real> cumulants = 
+        std::tuple<Real, Real, Real, Real> cumulants = 
             CumGen0234DerivCond(uncondProbs, 
                 saddlePt, mktFactor);
-        Real K0Saddle = ext::get<0>(cumulants);///USE THEM DIRECTLY
-        Real K2Saddle = ext::get<1>(cumulants);
+        Real K0Saddle = std::get<0>(cumulants);///USE THEM DIRECTLY
+        Real K2Saddle = std::get<1>(cumulants);
 
         Real wq = std::sqrt(2. * saddlePt * lossPercRatio - 2. * K0Saddle);
         //std::sqrt(-2. * saddlePt * lossPerc + 2. * K0Saddle);????

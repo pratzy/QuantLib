@@ -10,7 +10,7 @@
  under the terms of the QuantLib license.  You should have received a
  copy of the license along with this program; if not, please email
  <quantlib-dev@lists.sf.net>. The license is also available online at
- <http://quantlib.org/license.shtml>.
+ <https://www.quantlib.org/license.shtml>.
 
  This program is distributed in the hope that it will be useful, but WITHOUT
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
@@ -23,12 +23,12 @@
 #include <ql/indexes/indexmanager.hpp>
 #include <ql/instruments/payoffs.hpp>
 #include <ql/exercise.hpp>
+#include <ql/instruments/barriertype.hpp>
 #include <ql/termstructures/yieldtermstructure.hpp>
 #include <ql/termstructures/volatility/equityfx/blackvoltermstructure.hpp>
 #include <ql/quote.hpp>
 #include <ql/patterns/observable.hpp>
 #include <ql/time/daycounters/actual365fixed.hpp>
-#include <ql/functional.hpp>
 #include <boost/test/unit_test.hpp>
 #if BOOST_VERSION < 105900
 #include <boost/test/floating_point_comparison.hpp>
@@ -63,44 +63,11 @@ using QuantLib::value;
 #define QL_CHECK_CLOSE(L, R, T) BOOST_CHECK_CLOSE(value(L), value(R), value(T))
 #define QL_CHECK_CLOSE_FRACTION(L, R, T) BOOST_CHECK_CLOSE_FRACTION(value(L), value(R), value(T))
 
-
-// This makes it easier to use array literals (for new code, use std::vector though)
-#define LENGTH(a) (sizeof(a)/sizeof(a[0]))
-
-#define QUANTLIB_TEST_CASE(f) BOOST_TEST_CASE(QuantLib::detail::quantlib_test_case(f))
-
 namespace QuantLib {
-
-    namespace detail {
-
-        // used to avoid no-assertion messages in Boost 1.35
-        class quantlib_test_case {
-            ext::function<void()> test_;
-          public:
-            template <class F>
-            explicit quantlib_test_case(F test) : test_(test) {}
-            void operator()() const {
-                // Restore settings after each test.
-                SavedSettings restore;
-                // Clear all fixings before running a test to avoid interference.
-                IndexManager::instance().clearHistories();
-                BOOST_CHECK(true);
-                test_();
-            }
-            #if BOOST_VERSION <= 105300
-            // defined to avoid unused-variable warnings. It doesn't
-            // work after Boost 1.53 because the functions were
-            // overloaded and the address can't be resolved.
-            void _use_check(
-                    const void* = &boost::test_tools::check_is_close,
-                    const void* = &boost::test_tools::check_is_small) const {}
-            #endif
-        };
-
-    }
 
     std::string payoffTypeToString(const ext::shared_ptr<Payoff>&);
     std::string exerciseTypeToString(const ext::shared_ptr<Exercise>&);
+    std::string barrierTypeToString(Barrier::Type type);
 
 
     ext::shared_ptr<YieldTermStructure>

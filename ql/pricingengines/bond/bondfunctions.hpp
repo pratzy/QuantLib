@@ -13,7 +13,7 @@
  under the terms of the QuantLib license.  You should have received a
  copy of the license along with this program; if not, please email
  <quantlib-dev@lists.sf.net>. The license is also available online at
- <http://quantlib.org/license.shtml>.
+ <https://www.quantlib.org/license.shtml>.
 
  This program is distributed in the hope that it will be useful, but WITHOUT
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
@@ -115,14 +115,6 @@ namespace QuantLib {
                         const YieldTermStructure& discountCurve,
                         Date settlementDate = Date());
 
-        /*! \deprecated Use the overload taking a Bond::Price argument instead.
-                        Deprecated in version 1.34.
-        */
-        [[deprecated("Use the overload taking a Bond::Price argument instead")]]
-        static Rate atmRate(const Bond& bond,
-                            const YieldTermStructure& discountCurve,
-                            Date settlementDate,
-                            Real cleanPrice);
         static Rate atmRate(const Bond& bond,
                             const YieldTermStructure& discountCurve,
                             Date settlementDate = Date(),
@@ -158,20 +150,6 @@ namespace QuantLib {
                         Compounding compounding,
                         Frequency frequency,
                         Date settlementDate = Date());
-        /*! \deprecated Use the overload taking a Bond::Price argument instead.
-                        Deprecated in version 1.34.
-        */
-        [[deprecated("Use the overload taking a Bond::Price argument instead")]]
-        static Rate yield(const Bond& bond,
-                          Real price,
-                          const DayCounter& dayCounter,
-                          Compounding compounding,
-                          Frequency frequency,
-                          Date settlementDate = Date(),
-                          Real accuracy = 1.0e-10,
-                          Size maxIterations = 100,
-                          Rate guess = 0.05,
-                          Bond::Price::Type priceType = Bond::Price::Clean);
         static Rate yield(const Bond& bond,
                           Bond::Price price,
                           const DayCounter& dayCounter,
@@ -181,24 +159,6 @@ namespace QuantLib {
                           Real accuracy = 1.0e-10,
                           Size maxIterations = 100,
                           Rate guess = 0.05);
-        /*! \deprecated Use the overload taking a Bond::Price argument instead.
-                        Deprecated in version 1.34.
-        */
-        template <typename Solver>
-        [[deprecated("Use the overload taking a Bond::Price argument instead")]]
-        static Rate yield(const Solver& solver,
-                          const Bond& bond,
-                          Real price,
-                          const DayCounter& dayCounter,
-                          Compounding compounding,
-                          Frequency frequency,
-                          Date settlementDate = Date(),
-                          Real accuracy = 1.0e-10,
-                          Rate guess = 0.05,
-                          Bond::Price::Type priceType = Bond::Price::Clean) {
-            return yield(solver, bond, {price, priceType}, dayCounter, compounding, frequency,
-                         settlementDate, accuracy, guess);
-        }
         template <typename Solver>
         static Rate yield(const Solver& solver,
                           const Bond& bond,
@@ -273,6 +233,16 @@ namespace QuantLib {
         static Real cleanPrice(const Bond& bond,
                                const ext::shared_ptr<YieldTermStructure>& discount,
                                Spread zSpread,
+                               Compounding compounding,
+                               Frequency frequency,
+                               Date settlementDate = Date());
+        /*! \deprecated Use the overload without a day counter.
+                        Deprecated in version 1.42.
+        */
+        [[deprecated("Use the overload without a day counter")]]
+        static Real cleanPrice(const Bond& bond,
+                               const ext::shared_ptr<YieldTermStructure>& discount,
+                               Spread zSpread,
                                const DayCounter& dayCounter,
                                Compounding compounding,
                                Frequency frequency,
@@ -280,24 +250,33 @@ namespace QuantLib {
         static Real dirtyPrice(const Bond& bond,
                                const ext::shared_ptr<YieldTermStructure>& discount,
                                Spread zSpread,
+                               Compounding compounding,
+                               Frequency frequency,
+                               Date settlementDate = Date());
+        /*! \deprecated Use the overload without a day counter.
+                        Deprecated in version 1.42.
+        */
+        [[deprecated("Use the overload without a day counter")]]
+        static Real dirtyPrice(const Bond& bond,
+                               const ext::shared_ptr<YieldTermStructure>& discount,
+                               Spread zSpread,
                                const DayCounter& dayCounter,
                                Compounding compounding,
                                Frequency frequency,
                                Date settlementDate = Date());
-        /*! \deprecated Use the overload taking a Bond::Price argument instead.
-                        Deprecated in version 1.34.
-        */
-        [[deprecated("Use the overload taking a Bond::Price argument instead")]]
         static Spread zSpread(const Bond& bond,
-                              Real cleanPrice,
+                              Bond::Price price,
                               const ext::shared_ptr<YieldTermStructure>&,
-                              const DayCounter& dayCounter,
                               Compounding compounding,
                               Frequency frequency,
                               Date settlementDate = Date(),
                               Real accuracy = 1.0e-10,
                               Size maxIterations = 100,
                               Rate guess = 0.0);
+        /*! \deprecated Use the overload without a day counter.
+                        Deprecated in version 1.42.
+        */
+        [[deprecated("Use the overload without a day counter")]]
         static Spread zSpread(const Bond& bond,
                               Bond::Price price,
                               const ext::shared_ptr<YieldTermStructure>&,

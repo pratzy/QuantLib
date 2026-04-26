@@ -10,7 +10,7 @@ Copyright (C) 2023 Marcin Rybacki
  under the terms of the QuantLib license.  You should have received a
  copy of the license along with this program; if not, please email
  <quantlib-dev@lists.sf.net>. The license is also available online at
- <http://quantlib.org/license.shtml>.
+ <https://www.quantlib.org/license.shtml>.
 
  This program is distributed in the hope that it will be useful, but WITHOUT
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
@@ -49,7 +49,7 @@ namespace QuantLib {
         }
 
         template <typename IndexType, typename LegType>
-        Leg createInterestLeg(Schedule schedule,
+        Leg createInterestLeg(const Schedule& schedule,
                               const ext::shared_ptr<IndexType>& interestRateIndex,
                               Real nominal,
                               const DayCounter& dayCounter,
@@ -91,7 +91,7 @@ namespace QuantLib {
 
         legs_[0].push_back(createEquityCashFlow(schedule_, equityIndex_, nominal_, paymentCalendar_,
                                                 paymentConvention_, paymentDelay_));
-        for (Leg::const_iterator i = legs_[0].begin(); i < legs_[0].end(); ++i)
+        for (auto i = legs_[0].begin(); i < legs_[0].end(); ++i)
             registerWith(*i);
 
         switch (type_) {
@@ -133,7 +133,7 @@ namespace QuantLib {
         legs_[1] = createInterestLeg<IborIndex, IborLeg>(
             schedule_, interestRateIndex, nominal_, dayCounter_, margin_, gearing_,
             paymentCalendar_, paymentConvention_, paymentDelay_);
-        for (Leg::const_iterator i = legs_[1].begin(); i < legs_[1].end(); ++i)
+        for (auto i = legs_[1].begin(); i < legs_[1].end(); ++i)
             registerWith(*i);
     }
 
@@ -162,7 +162,7 @@ namespace QuantLib {
         legs_[1] = createInterestLeg<OvernightIndex, OvernightLeg>(
             schedule_, interestRateIndex, nominal_, dayCounter_, margin_, gearing_,
             paymentCalendar_, paymentConvention_, paymentDelay_);
-        for (Leg::const_iterator i = legs_[1].begin(); i < legs_[1].end(); ++i)
+        for (auto i = legs_[1].begin(); i < legs_[1].end(); ++i)
             registerWith(*i);
     }
 

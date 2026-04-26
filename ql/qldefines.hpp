@@ -12,7 +12,7 @@
  under the terms of the QuantLib license.  You should have received a
  copy of the license along with this program; if not, please email
  <quantlib-dev@lists.sf.net>. The license is also available online at
- <http://quantlib.org/license.shtml>.
+ <https://www.quantlib.org/license.shtml>.
 
  This program is distributed in the hope that it will be useful, but WITHOUT
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
@@ -24,8 +24,9 @@
 */
 
 #ifndef quantlib_defines_hpp
-/* install-hook */
 #define quantlib_defines_hpp
+
+/* install-hook */
 
 #ifdef _MSC_VER
 /* Microsoft-specific, but needs to be defined before
@@ -196,13 +197,6 @@
         __pragma(warning(disable : 4996))
 #    define QL_DEPRECATED_ENABLE_WARNING \
         __pragma(warning(pop))
-#elif defined(__GNUC__)
-#    define QL_DEPRECATED __attribute__((deprecated))
-#    define QL_DEPRECATED_DISABLE_WARNING                               \
-        _Pragma("GCC diagnostic push")                                  \
-        _Pragma("GCC diagnostic ignored \"-Wdeprecated-declarations\"")
-#    define QL_DEPRECATED_ENABLE_WARNING \
-        _Pragma("GCC diagnostic pop")
 #elif defined(__clang__)
 #    define QL_DEPRECATED __attribute__((deprecated))
 #    define QL_DEPRECATED_DISABLE_WARNING                                 \
@@ -210,6 +204,13 @@
         _Pragma("clang diagnostic ignored \"-Wdeprecated-declarations\"")
 #    define QL_DEPRECATED_ENABLE_WARNING \
         _Pragma("clang diagnostic pop")
+#elif defined(__GNUC__)
+#    define QL_DEPRECATED __attribute__((deprecated))
+#    define QL_DEPRECATED_DISABLE_WARNING                               \
+        _Pragma("GCC diagnostic push")                                  \
+        _Pragma("GCC diagnostic ignored \"-Wdeprecated-declarations\"")
+#    define QL_DEPRECATED_ENABLE_WARNING \
+        _Pragma("GCC diagnostic pop")
 #else
 // we don't know how to enable it, just define the macros away
 #    define QL_DEPRECATED

@@ -10,7 +10,7 @@
  under the terms of the QuantLib license.  You should have received a
  copy of the license along with this program; if not, please email
  <quantlib-dev@lists.sf.net>. The license is also available online at
- <http://quantlib.org/license.shtml>.
+ <https://www.quantlib.org/license.shtml>.
 
  This program is distributed in the hope that it will be useful, but WITHOUT
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
@@ -76,7 +76,7 @@ namespace QuantLib {
 
         Date lastQuoteDate = index_->lastQuoteDate();
         if (lastQuoteDate >= evaluationDate - 1) {
-            quoteValue = index_->price(evaluationDate);
+            quoteValue = index_->fixing(evaluationDate);
         } else {
             quoteValue = index_->forwardPrice(evaluationDate);
             std::ostringstream message;
@@ -106,8 +106,8 @@ namespace QuantLib {
 
         calculateSecondaryCostAmounts(quantity_.commodityType(),
                                       quantity_.amount(), evaluationDate);
-        for (SecondaryCostAmounts::const_iterator i = secondaryCostAmounts_.begin(); i != secondaryCostAmounts_.end(); ++i) {
-            Real amount = i->second.value();
+        for (auto & secondaryCostAmount : secondaryCostAmounts_) {
+            Real amount = secondaryCostAmount.second.value();
             NPV_ -= amount;
         }
 

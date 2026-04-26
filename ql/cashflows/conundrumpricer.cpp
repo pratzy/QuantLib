@@ -10,7 +10,7 @@
  under the terms of the QuantLib license.  You should have received a
  copy of the license along with this program; if not, please email
  <quantlib-dev@lists.sf.net>. The license is also available online at
- <http://quantlib.org/license.shtml>.
+ <https://www.quantlib.org/license.shtml>.
 
 
  This program is distributed in the hope that it will be useful, but
@@ -24,7 +24,6 @@
 
 #include <ql/cashflows/cmscoupon.hpp>
 #include <ql/cashflows/conundrumpricer.hpp>
-#include <ql/functional.hpp>
 #include <ql/indexes/interestrateindex.hpp>
 #include <ql/indexes/swapindex.hpp>
 #include <ql/instruments/vanillaswap.hpp>
@@ -36,6 +35,7 @@
 #include <ql/termstructures/volatility/smilesection.hpp>
 #include <ql/termstructures/yieldtermstructure.hpp>
 #include <ql/time/schedule.hpp>
+#include <functional>
 #include <utility>
 
 namespace QuantLib {
@@ -232,7 +232,7 @@ namespace QuantLib {
 
         class VariableChange {
           public:
-            VariableChange(ext::function<Real (Real)>& f,
+            VariableChange(std::function<Real (Real)>& f,
                            Real a, Real b, Size k)
             : a_(a), width_(b-a), f_(f), k_(k) {}
             Real value(Real x) const {
@@ -246,13 +246,13 @@ namespace QuantLib {
             }
           private:
             Real a_, width_;
-            ext::function<Real (Real)> f_;
+            std::function<Real (Real)> f_;
             Size k_;
         };
 
         class Spy {
           public:
-            explicit Spy(ext::function<Real(Real)> f) : f_(std::move(f)) {}
+            explicit Spy(std::function<Real(Real)> f) : f_(std::move(f)) {}
             Real value(Real x){
                 abscissas.push_back(x);
                 Real value = f_(x);
@@ -260,7 +260,7 @@ namespace QuantLib {
                 return value;
             }
           private:
-            ext::function<Real (Real)> f_;
+            std::function<Real (Real)> f_;
             std::vector<Real> abscissas;
             std::vector<Real> functionValues;
         };
@@ -298,7 +298,7 @@ namespace QuantLib {
             if (b > a)
                 upperBoundary = std::min(upperBoundary, b);
 
-            ext::function<Real(Real)> f;
+            std::function<Real(Real)> f;
             GaussKronrodNonAdaptive
                 gaussKronrodNonAdaptive(precision_, 1000000, 1.0);
             // if the integration intervall is wide enough we use the
@@ -306,13 +306,13 @@ namespace QuantLib {
             upperBoundary = std::max(a, std::min(upperBoundary, hardUpperLimit_));
             if (upperBoundary > 2 * a) {
                 Size k = 3;
-                ext::function<Real(Real)> temp = ext::cref(integrand);
+                std::function<Real(Real)> temp = std::cref(integrand);
                 VariableChange variableChange(temp, a, upperBoundary, k);
                 f = [&](Real _x) { return variableChange.value(_x); };
                 result = gaussKronrodNonAdaptive(f, .0, 1.0);
             }
             else {
-                f = ext::cref(integrand);
+                f = std::cref(integrand);
                 result = gaussKronrodNonAdaptive(f, a, upperBoundary);
             }
 

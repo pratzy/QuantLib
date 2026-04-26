@@ -11,7 +11,7 @@
  under the terms of the QuantLib license.  You should have received a
  copy of the license along with this program; if not, please email
  <quantlib-dev@lists.sf.net>. The license is also available online at
- <http://quantlib.org/license.shtml>.
+ <https://www.quantlib.org/license.shtml>.
 
  This program is distributed in the hope that it will be useful, but WITHOUT
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
@@ -38,23 +38,6 @@ namespace QuantLib {
     class Garch11 : public VolatilityCompositor {
       public:
         typedef TimeSeries<Volatility> time_series;
-
-        /*! \deprecated Use auto or time_series::const_iterator instead.
-                        Deprecated in version 1.31.
-        */
-        [[deprecated("If needed, use time_series::const_iterator instead.")]]
-        typedef time_series::const_iterator const_iterator;
-
-        QL_DEPRECATED_DISABLE_WARNING
-
-        /*! \deprecated If needed, use auto or time_series::const_value_iterator.
-                        Prefer time_series::const_iterator instead.
-                        Deprecated in version 1.31.
-        */
-        [[deprecated("If needed, use auto or time_series::const_value_iterator. Prefer time_series::const_iterator instead.")]]
-        typedef time_series::const_value_iterator const_value_iterator;
-
-        QL_DEPRECATED_ENABLE_WARNING
 
         enum Mode {
             MomentMatchingGuess,   /*!< The initial guess is a moment

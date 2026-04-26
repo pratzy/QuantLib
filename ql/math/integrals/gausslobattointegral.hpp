@@ -10,7 +10,7 @@
  under the terms of the QuantLib license.  You should have received a
  copy of the license along with this program; if not, please email
  <quantlib-dev@lists.sf.net>. The license is also available online at
- <http://quantlib.org/license.shtml>.
+ <https://www.quantlib.org/license.shtml>.
 
  This program is distributed in the hope that it will be useful, but WITHOUT
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
@@ -56,12 +56,12 @@ namespace QuantLib {
                              bool useConvergenceEstimate = true);
 
       protected:
-        Real integrate(const ext::function<Real(Real)>& f, Real a, Real b) const override;
+        Real integrate(const std::function<Real(Real)>& f, Real a, Real b) const override;
 
-        Real adaptivGaussLobattoStep(const ext::function<Real (Real)>& f,
+        Real adaptivGaussLobattoStep(const std::function<Real (Real)>& f,
                                      Real a, Real b, Real fa, Real fb,
                                      Real is) const;
-        Real calculateAbsTolerance(const ext::function<Real (Real)>& f,
+        Real calculateAbsTolerance(const std::function<Real (Real)>& f,
                                    Real a, Real b) const;
 
         Real relAccuracy_;

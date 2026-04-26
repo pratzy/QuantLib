@@ -11,7 +11,7 @@
  under the terms of the QuantLib license.  You should have received a
  copy of the license along with this program; if not, please email
  <quantlib-dev@lists.sf.net>. The license is also available online at
- <http://quantlib.org/license.shtml>.
+ <https://www.quantlib.org/license.shtml>.
 
  This program is distributed in the hope that it will be useful, but WITHOUT
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
@@ -26,6 +26,8 @@
 #include <ql/math/integrals/gaussianquadratures.hpp>
 #include <ql/math/matrixutilities/tqreigendecomposition.hpp>
 #include <ql/math/matrixutilities/symmetricschurdecomposition.hpp>
+
+#include <map>
 
 namespace QuantLib {
 
@@ -59,6 +61,50 @@ namespace QuantLib {
     }
 
 
+    MultiDimGaussianIntegration::MultiDimGaussianIntegration(
+        const std::vector<Size>& ns,
+        const std::function<ext::shared_ptr<GaussianQuadrature>(Size)>& genQuad)
+    : weights_(std::accumulate(ns.begin(), ns.end(), Size(1), std::multiplies<>()), 1.0),
+      x_(weights_.size(), Array(ns.size())) {
+
+        const Size m = ns.size();
+        const Size n = x_.size();
+
+        std::vector<Size> spacing(m);
+        spacing[0] = 1;
+        std::partial_sum(ns.begin(), ns.end()-1, spacing.begin()+1, std::multiplies<>());
+
+        std::map<Size, Array> n2weights, n2x;
+        for (auto order: ns) {
+            if (n2x.find(order) == n2x.end()) {
+                const ext::shared_ptr<GaussianQuadrature> quad = genQuad(order);
+                n2x[order] = quad->x();
+                n2weights[order] = quad->weights();
+            }
+        }
+
+        for (Size i=0; i < n; ++i) {
+            for (Size j=0; j < m; ++j) {
+                const Size order = ns[j];
+                const Size nx = (i / spacing[j]) % ns[j];
+                weights_[i] *= n2weights[order][nx];
+                x_[i][j] = n2x[order][nx];
+            }
+        }
+    }
+
+    Real MultiDimGaussianIntegration::operator()(
+        const std::function<Real(Array)>& f) const {
+        Real s = 0.0;
+        const Size n = x_.size();
+        for (Size i=0; i < n; ++i)
+            s += weights_[i]*f(x_[i]);
+
+        return s;
+    }
+
+
+
     namespace detail {
         template <class Integration>
         GaussianQuadratureIntegrator<Integration>::GaussianQuadratureIntegrator(
@@ -69,7 +115,7 @@ namespace QuantLib {
 
         template <class Integration>
         Real GaussianQuadratureIntegrator<Integration>::integrate(
-            const ext::function<Real (Real)>& f, Real a, Real b) const {
+            const std::function<Real (Real)>& f, Real a, Real b) const {
 
             const Real c1 = 0.5*(b-a);
             const Real c2 = 0.5*(a+b);

@@ -10,7 +10,7 @@
  under the terms of the QuantLib license.  You should have received a
  copy of the license along with this program; if not, please email
  <quantlib-dev@lists.sf.net>. The license is also available online at
- <http://quantlib.org/license.shtml>.
+ <https://www.quantlib.org/license.shtml>.
 
  This program is distributed in the hope that it will be useful, but WITHOUT
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
@@ -64,7 +64,7 @@ namespace QuantLib {
         void calculate() const;
 
       protected:
-        virtual ext::shared_ptr<LongstaffSchwartzMultiPathPricer> 
+        virtual ext::shared_ptr<LongstaffSchwartzMultiPathPricer>
                                                     lsmPathPricer() const = 0;
 
         TimeGrid timeGrid() const;
@@ -112,7 +112,7 @@ namespace QuantLib {
                    "timeSteps must be positive, " << timeSteps <<
                    " not allowed");
         QL_REQUIRE(timeStepsPerYear != 0,
-                   "timeStepsPerYear must be positive, " 
+                   "timeStepsPerYear must be positive, "
                     << timeStepsPerYear << " not allowed");
         this->registerWith(process_);
     }
@@ -122,7 +122,7 @@ namespace QuantLib {
     inline
     ext::shared_ptr<typename
         MCLongstaffSchwartzPathEngine<GenericEngine,MC,RNG,S>::path_pricer_type>
-        MCLongstaffSchwartzPathEngine<GenericEngine,MC,RNG,S>::pathPricer() 
+        MCLongstaffSchwartzPathEngine<GenericEngine,MC,RNG,S>::pathPricer()
         const {
 
         QL_REQUIRE(pathPricer_, "path pricer unknown");
@@ -132,7 +132,7 @@ namespace QuantLib {
     template <class GenericEngine, template <class> class MC,
               class RNG, class S>
     inline
-    void MCLongstaffSchwartzPathEngine<GenericEngine,MC,RNG,S>::calculate() 
+    void MCLongstaffSchwartzPathEngine<GenericEngine,MC,RNG,S>::calculate()
     const {
         pathPricer_ = this->lsmPathPricer();
         this->mcModel_ = ext::shared_ptr<MonteCarloModel<MC,RNG,S> >(
@@ -147,7 +147,7 @@ namespace QuantLib {
                                           requiredSamples_,
                                           maxSamples_);
         this->results_.value = this->mcModel_->sampleAccumulator().mean();
-        if (RNG::allowsErrorEstimate) {
+        if constexpr (RNG::allowsErrorEstimate) {
             this->results_.errorEstimate =
                 this->mcModel_->sampleAccumulator().errorEstimate();
         }
@@ -177,7 +177,7 @@ namespace QuantLib {
     inline
     ext::shared_ptr<typename
     MCLongstaffSchwartzPathEngine<GenericEngine,MC,RNG,S>::path_generator_type>
-    MCLongstaffSchwartzPathEngine<GenericEngine,MC,RNG,S>::pathGenerator() 
+    MCLongstaffSchwartzPathEngine<GenericEngine,MC,RNG,S>::pathGenerator()
     const {
 
         Size dimensions = process_->factors();

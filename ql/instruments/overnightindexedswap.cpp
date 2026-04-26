@@ -13,7 +13,7 @@
  under the terms of the QuantLib license.  You should have received a
  copy of the license along with this program; if not, please email
  <quantlib-dev@lists.sf.net>. The license is also available online at
- <http://quantlib.org/license.shtml>.
+ <https://www.quantlib.org/license.shtml>.
 
  This program is distributed in the hope that it will be useful, but WITHOUT
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
@@ -38,7 +38,10 @@ namespace QuantLib {
                                                BusinessDayConvention paymentAdjustment,
                                                const Calendar& paymentCalendar,
                                                bool telescopicValueDates,
-                                               RateAveraging::Type averagingMethod)
+                                               RateAveraging::Type averagingMethod,
+                                               Natural lookbackDays,
+                                               Natural lockoutDays,
+                                               bool applyObservationShift)
     : OvernightIndexedSwap(type,
                            std::vector<Real>(1, nominal),
                            schedule,
@@ -50,7 +53,10 @@ namespace QuantLib {
                            paymentAdjustment,
                            paymentCalendar,
                            telescopicValueDates,
-                           averagingMethod) {}
+                           averagingMethod,
+                           lookbackDays,
+                           lockoutDays,
+                           applyObservationShift) {}
 
     OvernightIndexedSwap::OvernightIndexedSwap(Type type,
                                                const std::vector<Real>& nominals,
@@ -63,7 +69,10 @@ namespace QuantLib {
                                                BusinessDayConvention paymentAdjustment,
                                                const Calendar& paymentCalendar,
                                                bool telescopicValueDates,
-                                               RateAveraging::Type averagingMethod)
+                                               RateAveraging::Type averagingMethod,
+                                               Natural lookbackDays,
+                                               Natural lockoutDays,
+                                               bool applyObservationShift)
     : OvernightIndexedSwap(type,
                            nominals,
                            schedule,
@@ -77,7 +86,10 @@ namespace QuantLib {
                            paymentAdjustment,
                            paymentCalendar,
                            telescopicValueDates,
-                           averagingMethod) {}
+                           averagingMethod, 
+                           lookbackDays, 
+                           lockoutDays, 
+                           applyObservationShift) {}
 
     OvernightIndexedSwap::OvernightIndexedSwap(Type type,
                                                Real nominal,
@@ -91,7 +103,10 @@ namespace QuantLib {
                                                BusinessDayConvention paymentAdjustment,
                                                const Calendar& paymentCalendar,
                                                bool telescopicValueDates,
-                                               RateAveraging::Type averagingMethod)
+                                               RateAveraging::Type averagingMethod,
+                                               Natural lookbackDays,
+                                               Natural lockoutDays,
+                                               bool applyObservationShift)
     : OvernightIndexedSwap(type,
                            std::vector<Real>(1, nominal),
                            std::move(fixedSchedule),
@@ -105,7 +120,10 @@ namespace QuantLib {
                            paymentAdjustment,
                            paymentCalendar,
                            telescopicValueDates,
-                           averagingMethod) {}
+                           averagingMethod,
+                           lookbackDays,
+                           lockoutDays,
+                           applyObservationShift) {}
 
     OvernightIndexedSwap::OvernightIndexedSwap(Type type,
                                                std::vector<Real> fixedNominals,
@@ -120,11 +138,19 @@ namespace QuantLib {
                                                BusinessDayConvention paymentAdjustment,
                                                const Calendar& paymentCalendar,
                                                bool telescopicValueDates,
-                                               RateAveraging::Type averagingMethod)
+                                               RateAveraging::Type averagingMethod,
+                                               Natural lookbackDays,
+                                               Natural lockoutDays,
+                                               bool applyObservationShift)
     : FixedVsFloatingSwap(type, std::move(fixedNominals), std::move(fixedSchedule), fixedRate, std::move(fixedDC),
                           overnightNominals, std::move(overnightSchedule), overnightIndex,
                           spread, DayCounter(), ext::nullopt, paymentLag, paymentCalendar),
-                          overnightIndex_(overnightIndex), averagingMethod_(averagingMethod) {
+                          overnightIndex_(overnightIndex),
+                          paymentLag_(paymentLag), paymentCalendar_(paymentCalendar),
+                          telescopicValueDates_(telescopicValueDates),
+                          averagingMethod_(averagingMethod),
+                          lookbackDays_(lookbackDays), lockoutDays_(lockoutDays),
+                          applyObservationShift_(applyObservationShift) {
         legs_[1] =
             OvernightLeg(floatingSchedule(), overnightIndex_)
                 .withNotionals(overnightNominals)
@@ -135,7 +161,10 @@ namespace QuantLib {
                 .withPaymentCalendar(paymentCalendar.empty() ?
                                      floatingSchedule().calendar() :
                                      paymentCalendar)
-                .withAveragingMethod(averagingMethod_);
+                .withAveragingMethod(averagingMethod_)
+                .withLookbackDays(lookbackDays_)
+                .withLockoutDays(lockoutDays_)
+                .withObservationShift(applyObservationShift_);
         for (const auto& c : legs_[1])
             registerWith(c);
     }

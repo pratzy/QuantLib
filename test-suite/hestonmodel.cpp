@@ -11,17 +11,16 @@
  under the terms of the QuantLib license.  You should have received a
  copy of the license along with this program; if not, please email
  <quantlib-dev@lists.sf.net>. The license is also available online at
- <http://quantlib.org/license.shtml>.
+ <https://www.quantlib.org/license.shtml>.
 
  This program is distributed in the hope that it will be useful, but WITHOUT
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
-#include "preconditions.hpp"
 #include "toplevelfixture.hpp"
 #include "utilities.hpp"
-#include <ql/experimental/exoticoptions/analyticpdfhestonengine.hpp>
+#include <algorithm>
 #include <ql/instruments/barrieroption.hpp>
 #include <ql/instruments/vanillaoption.hpp>
 #include <ql/math/functional.hpp>
@@ -39,6 +38,7 @@
 #include <ql/pricingengines/blackformula.hpp>
 #include <ql/pricingengines/vanilla/analyticdividendeuropeanengine.hpp>
 #include <ql/pricingengines/vanilla/analytichestonengine.hpp>
+#include <ql/pricingengines/vanilla/analyticpdfhestonengine.hpp>
 #include <ql/pricingengines/vanilla/analyticptdhestonengine.hpp>
 #include <ql/pricingengines/vanilla/coshestonengine.hpp>
 #include <ql/pricingengines/vanilla/exponentialfittinghestonengine.hpp>
@@ -237,9 +237,6 @@ BOOST_AUTO_TEST_CASE(testBlackCalibration) {
        smile. expected result is a vanishing volatility of the volatility.
        In addition theta and v0 should be equal to the constant variance */
 
-    Date today = Date::todaysDate();
-    Settings::instance().evaluationDate() = today;
-
     DayCounter dayCounter = Actual360();
     Calendar calendar = NullCalendar();
 
@@ -375,8 +372,8 @@ BOOST_AUTO_TEST_CASE(testDAXCalibration) {
 BOOST_AUTO_TEST_CASE(testAnalyticVsBlack) {
     BOOST_TEST_MESSAGE("Testing analytic Heston engine against Black formula...");
 
-    Date settlementDate = Date::todaysDate();
-    Settings::instance().evaluationDate() = settlementDate;
+    Date settlementDate = Settings::instance().evaluationDate();
+
     DayCounter dayCounter = ActualActual(ActualActual::ISDA);
     Date exerciseDate = settlementDate + 6*Months;
 
@@ -591,11 +588,11 @@ BOOST_AUTO_TEST_CASE(testMcVsCached) {
     }
 }
 
-BOOST_AUTO_TEST_CASE(testFdBarrierVsCached, *precondition(if_speed(Fast))) {
+BOOST_AUTO_TEST_CASE(testFdBarrierVsCached) {
     BOOST_TEST_MESSAGE("Testing FD barrier Heston engine against cached values...");
 
     DayCounter dc = Actual360();
-    Date today = Date::todaysDate();
+    Date today = Settings::instance().evaluationDate();
 
     Handle<Quote> s0(ext::make_shared<SimpleQuote>(100.0));
     Handle<YieldTermStructure> rTS(flatRate(today, 0.08, dc));
@@ -788,7 +785,7 @@ BOOST_AUTO_TEST_CASE(testFdAmerican) {
     }
 }
 
-BOOST_AUTO_TEST_CASE(testKahlJaeckelCase, *precondition(if_speed(Fast))) {
+BOOST_AUTO_TEST_CASE(testKahlJaeckelCase) {
     BOOST_TEST_MESSAGE(
           "Testing MC and FD Heston engines for the Kahl-Jaeckel example...");
 
@@ -940,7 +937,7 @@ BOOST_AUTO_TEST_CASE(testKahlJaeckelCase, *precondition(if_speed(Fast))) {
     }
 }
 
-BOOST_AUTO_TEST_CASE(testDifferentIntegrals, *precondition(if_speed(Fast))) {
+BOOST_AUTO_TEST_CASE(testDifferentIntegrals) {
     BOOST_TEST_MESSAGE(
        "Testing different numerical Heston integration algorithms...");
 
@@ -971,7 +968,7 @@ BOOST_AUTO_TEST_CASE(testDifferentIntegrals, *precondition(if_speed(Fast))) {
     };
     const Real tol[] = { 1e-3, 1e-3, 0.2, 0.01, 1e-3 };
 
-    for (std::vector<HestonParameter>::const_iterator iter = params.begin();
+    for (auto iter = params.begin();
          iter != params.end(); ++iter) {
 
         Handle<Quote> s0(ext::make_shared<SimpleQuote>(1.0));
@@ -1049,9 +1046,12 @@ BOOST_AUTO_TEST_CASE(testDifferentIntegrals, *precondition(if_speed(Fast))) {
                 }
             }
         }
-        const Real maxDiff = std::max(std::max(
-            std::max(maxLaguerreDiff,maxLegendreDiff),
-                                     maxChebyshevDiff), maxChebyshev2ndDiff);
+        const Real maxDiff = std::max({
+                maxLaguerreDiff,
+                maxLegendreDiff,
+                maxChebyshevDiff,
+                maxChebyshev2ndDiff
+            });
 
         const Real tr = tol[iter - params.begin()];
         if (maxDiff > tr) {
@@ -1379,13 +1379,13 @@ BOOST_AUTO_TEST_CASE(testAlanLewisReferencePrices) {
     const Real tol = 1e-12; // 3e-15 works on linux/ia32,
                             // but keep some buffer for other platforms
 
-    for (Size i=0; i < LENGTH(strikes); ++i) {
+    for (Size i=0; i < std::size(strikes); ++i) {
         const Real strike = strikes[i];
 
-        for (Size j=0; j < LENGTH(types); ++j) {
+        for (Size j=0; j < std::size(types); ++j) {
             const Option::Type type = types[j];
 
-            for (Size k=0; k < LENGTH(engines); ++k) {
+            for (Size k=0; k < std::size(engines); ++k) {
                 const ext::shared_ptr<PricingEngine> engine = engines[k];
 
                 const ext::shared_ptr<StrikedTypePayoff> payoff(
@@ -1467,13 +1467,13 @@ BOOST_AUTO_TEST_CASE(testExpansionOnAlanLewisReference) {
 
     const Real tol[2] = {1.003e-2, 3.645e-3};
 
-    for (Size i=0; i < LENGTH(strikes); ++i) {
+    for (Size i=0; i < std::size(strikes); ++i) {
         const Real strike = strikes[i];
 
-        for (Size j=0; j < LENGTH(types); ++j) {
+        for (Size j=0; j < std::size(types); ++j) {
             const Option::Type type = types[j];
 
-            for (Size k=0; k < LENGTH(engines); ++k) {
+            for (Size k=0; k < std::size(engines); ++k) {
                 const ext::shared_ptr<PricingEngine> engine = engines[k];
 
                 const ext::shared_ptr<StrikedTypePayoff> payoff =
@@ -1530,7 +1530,7 @@ BOOST_AUTO_TEST_CASE(testExpansionOnFordeReference) {
         {7e-6, 4e-4, 9e-4, 4e-4},
         {4e-4, 3e-2, 0.28, 1.0}
     };
-    for (Size j=0; j < LENGTH(terms); ++j) {
+    for (Size j=0; j < std::size(terms); ++j) {
         const Real term = terms[j];
         const ext::shared_ptr<HestonExpansion> lpp2 =
             ext::make_shared<LPP2HestonExpansion>(kappa, theta, sigma,
@@ -1542,9 +1542,9 @@ BOOST_AUTO_TEST_CASE(testExpansionOnFordeReference) {
             ext::make_shared<FordeHestonExpansion>(kappa, theta, sigma,
                                                      v0, rho, term);
         const ext::shared_ptr<HestonExpansion> expansions[] = { lpp2, lpp3, forde };
-        for (Size i=0; i < LENGTH(strikes); ++i) {
+        for (Size i=0; i < std::size(strikes); ++i) {
             const Real strike = strikes[i];
-            for (Size k=0; k < LENGTH(expansions); ++k) {
+            for (Size k=0; k < std::size(expansions); ++k) {
                 const ext::shared_ptr<HestonExpansion> expansion = expansions[k];
 
                 const Real expected = referenceVols[j][i];
@@ -1820,7 +1820,7 @@ BOOST_AUTO_TEST_CASE(testCosHestonCumulants) {
 
     for (Time t=0.01; t < 41.0; t+=t) {
         const Real nc1 = NumericalDifferentiation(
-            ext::function<Real(Real)>(
+            std::function<Real(Real)>(
                 LogCharacteristicFunction(1, t, cosEngine)),
             1, 1e-5, 5, central)(0.0);
 
@@ -1834,7 +1834,7 @@ BOOST_AUTO_TEST_CASE(testCosHestonCumulants) {
         }
 
         const Real nc2 = NumericalDifferentiation(
-            ext::function<Real(Real)>(
+            std::function<Real(Real)>(
                 LogCharacteristicFunction(2, t, cosEngine)),
             2, 1e-2, 5, central)(0.0);
 
@@ -1848,7 +1848,7 @@ BOOST_AUTO_TEST_CASE(testCosHestonCumulants) {
         }
 
         const Real nc3 = NumericalDifferentiation(
-            ext::function<Real(Real)>(
+            std::function<Real(Real)>(
                 LogCharacteristicFunction(3, t, cosEngine)),
             3, 5e-3, 7, central)(0.0);
 
@@ -1862,7 +1862,7 @@ BOOST_AUTO_TEST_CASE(testCosHestonCumulants) {
         }
 
         const Real nc4 = NumericalDifferentiation(
-            ext::function<Real(Real)>(
+            std::function<Real(Real)>(
                 LogCharacteristicFunction(4, t, cosEngine)),
             4, 5e-2, 9, central)(0.0);
 
@@ -1922,7 +1922,7 @@ BOOST_AUTO_TEST_CASE(testCosHestonEngine) {
 
     const Real tol = 1e-10;
 
-    for (Size i=0; i < LENGTH(payoffs); ++i) {
+    for (Size i=0; i < std::size(payoffs); ++i) {
         VanillaOption option(payoffs[i], exercise);
 
         option.setPricingEngine(cosEngine);
@@ -2141,7 +2141,7 @@ BOOST_AUTO_TEST_CASE(testAndersenPiterbargPricing) {
                 option.setPricingEngine(analyticEngine);
                 const Real expected = option.NPV();
 
-                for (Size k=0; k < LENGTH(engines); ++k) {
+                for (Size k=0; k < std::size(engines); ++k) {
                     option.setPricingEngine(engines[k]);
                     const Real calculated = option.NPV();
 
@@ -2261,7 +2261,7 @@ BOOST_AUTO_TEST_CASE(testAndersenPiterbargControlVariateIntegrand) {
         -8.0*std::log(engine->chF(std::complex<Real>(0, -0.5), maturity).real())
     };
 
-    for (Size i=0; i < LENGTH(variances); ++i) {
+    for (Size i=0; i < std::size(variances); ++i) {
         const Real sigmaBS = std::sqrt(variances[i]/maturity);
 
         for (Real u =0.001; u < 15; u*=1.05) {
@@ -2957,7 +2957,7 @@ BOOST_AUTO_TEST_CASE(testExponentialFitting4StrikesAndMaturities) {
         const DiscountFactor df = rTS->discount(t);
         const Real fwd = s0->value()*qTS->discount(t)/df;
 
-        for (Size j=0; j < LENGTH(moneyness); ++j, ++idx) {
+        for (Size j=0; j < std::size(moneyness); ++j, ++idx) {
             const Real strike =
                 std::exp(-moneyness[j]*std::sqrt(theta*t))*fwd;
 
@@ -3104,8 +3104,8 @@ BOOST_AUTO_TEST_CASE(testAsymptoticControlVariate) {
         ext::make_shared<ExponentialFittingHestonEngine>(model)
     };
 
-    for (Size j=0; j < LENGTH(engines); ++j) {
-        for (Size i=0; i < LENGTH(moneynesses); ++i) {
+    for (Size j=0; j < std::size(engines); ++j) {
+        for (Size i=0; i < std::size(moneynesses); ++i) {
             const Real moneyness = moneynesses[i];
 
             const Real strike = std::exp(-moneyness*std::sqrt(theta*t));

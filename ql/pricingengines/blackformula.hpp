@@ -8,7 +8,7 @@
  Copyright (C) 2007 Cristina Duminuco
  Copyright (C) 2007 Chiara Fornarola
  Copyright (C) 2013 Gary Kennedy
- Copyright (C) 2015 Peter Caspers
+ Copyright (C) 2015, 2024 Peter Caspers
  Copyright (C) 2017 Klaus Spanderen
  Copyright (C) 2019 Wojciech Ślusarski
  Copyright (C) 2020 Marcin Rybacki
@@ -20,7 +20,7 @@
  under the terms of the QuantLib license.  You should have received a
  copy of the license along with this program; if not, please email
  <quantlib-dev@lists.sf.net>. The license is also available online at
- <http://quantlib.org/license.shtml>.
+ <https://www.quantlib.org/license.shtml>.
 
  This program is distributed in the hope that it will be useful, but WITHOUT
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
@@ -364,6 +364,18 @@ namespace QuantLib {
         of J. Choi, K Kim and M. Kwak (2009), “Numerical Approximation of the
         Implied Volatility Under Arithmetic Brownian Motion”,
         Applied Math. Finance, 16(3), pp. 261-268.
+    */
+    Real bachelierBlackFormulaImpliedVolChoi(Option::Type optionType,
+                                             Real strike,
+                                             Real forward,
+                                             Real tte,
+                                             Real bachelierPrice,
+                                             Real discount = 1.0);
+
+    /*! Exact Bachelier implied volatility
+
+        It is calculated using the analytic implied volatility formula
+        of Jaeckel (2017), "Implied Normal Volatility"
     */
     Real bachelierBlackFormulaImpliedVol(Option::Type optionType,
                                          Real strike,

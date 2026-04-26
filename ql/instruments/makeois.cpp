@@ -13,7 +13,7 @@
  under the terms of the QuantLib license.  You should have received a
  copy of the license along with this program; if not, please email
  <quantlib-dev@lists.sf.net>. The license is also available online at
- <http://quantlib.org/license.shtml>.
+ <https://www.quantlib.org/license.shtml>.
 
  This program is distributed in the hope that it will be useful, but WITHOUT
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
@@ -24,6 +24,8 @@
 #include <ql/pricingengines/swap/discountingswapengine.hpp>
 #include <ql/indexes/iborindex.hpp>
 #include <ql/time/schedule.hpp>
+#include <ql/indexes/ibor/sonia.hpp>
+#include <ql/indexes/ibor/corra.hpp>
 
 namespace QuantLib {
 
@@ -44,16 +46,34 @@ namespace QuantLib {
 
     MakeOIS::operator ext::shared_ptr<OvernightIndexedSwap>() const {
 
+        QL_REQUIRE(effectiveDate_ == Date() || settlementDays_ == Null<Natural>(),
+                   "cannot set both an explicit effective date and settlement days; "
+                   "use one or the other");
+
         Date startDate;
         if (effectiveDate_ != Date())
             startDate = effectiveDate_;
         else {
+            // settlement days: override if set, else fallback to default by index name
+            Natural settlementDays = settlementDays_;
+            if (settlementDays == Null<Natural>()) {
+                if (ext::dynamic_pointer_cast<Sonia>(overnightIndex_)) {
+                    settlementDays = 0; 
+                }
+                else if (ext::dynamic_pointer_cast<Corra>(overnightIndex_)) {
+                    settlementDays = 1;
+                }
+                else {
+                    settlementDays = 2;
+                }
+            }            
+
             Date refDate = Settings::instance().evaluationDate();
             // if the evaluation date is not a business day
             // then move to the next business day
             refDate = overnightCalendar_.adjust(refDate);
             Date spotDate = overnightCalendar_.advance(refDate,
-                                                       settlementDays_*Days);
+                                                       settlementDays*Days);
             startDate = spotDate+forwardStart_;
             if (forwardStart_.length()<0)
                 startDate = overnightCalendar_.adjust(startDate, Preceding);
@@ -61,24 +81,22 @@ namespace QuantLib {
                 startDate = overnightCalendar_.adjust(startDate, Following);
         }
 
-        // OIS end of month default
-        bool fixedEndOfMonth, overnightEndOfMonth;
+        bool fixedEndOfMonth, overnightEndOfMonth, maturityEndOfMonth;
         if (isDefaultEOM_)
-            fixedEndOfMonth = overnightEndOfMonth = overnightCalendar_.isEndOfMonth(startDate);
+            fixedEndOfMonth = overnightEndOfMonth = maturityEndOfMonth =
+                overnightCalendar_.isEndOfMonth(startDate);
         else {
             fixedEndOfMonth = fixedEndOfMonth_;
             overnightEndOfMonth = overnightEndOfMonth_;
+            maturityEndOfMonth = maturityEndOfMonth_ ? *maturityEndOfMonth_ : overnightEndOfMonth_;
         }
 
         Date endDate = terminationDate_;
         if (endDate == Date()) {
-            if (overnightEndOfMonth)
-                endDate = overnightCalendar_.advance(startDate,
-                                                     swapTenor_,
-                                                     ModifiedFollowing,
-                                                     overnightEndOfMonth);
-            else
-                endDate = startDate + swapTenor_;
+            endDate = startDate + swapTenor_;
+            if (maturityEndOfMonth && allowsEndOfMonth(swapTenor_) &&
+                overnightCalendar_.isEndOfMonth(startDate))
+                endDate = overnightCalendar_.endOfMonth(endDate);
         }
 
         Frequency fixedPaymentFrequency, overnightPaymentFrequency;
@@ -148,7 +166,8 @@ namespace QuantLib {
                                  overnightIndex_, overnightSpread_,
                                  paymentLag_, paymentAdjustment_,
                                  paymentCalendar_, telescopicValueDates_, 
-                                 averagingMethod_));
+                                 averagingMethod_, lookbackDays_,
+                                 lockoutDays_, applyObservationShift_));
 
         if (engine_ == nullptr) {
             Handle<YieldTermStructure> disc =
@@ -180,7 +199,6 @@ namespace QuantLib {
 
     MakeOIS& MakeOIS::withSettlementDays(Natural settlementDays) {
         settlementDays_ = settlementDays;
-        effectiveDate_ = Date();
         return *this;
     }
 
@@ -191,7 +209,8 @@ namespace QuantLib {
 
     MakeOIS& MakeOIS::withTerminationDate(const Date& terminationDate) {
         terminationDate_ = terminationDate;
-        swapTenor_ = Period();
+        if (terminationDate != Date())
+            swapTenor_ = Period();
         return *this;
     }
 
@@ -316,6 +335,12 @@ namespace QuantLib {
         return *this;
     }
 
+    MakeOIS& MakeOIS::withMaturityEndOfMonth(bool flag) {
+        maturityEndOfMonth_ = flag;
+        isDefaultEOM_ = false;
+        return *this;
+    }
+
     MakeOIS& MakeOIS::withOvernightLegSpread(Spread sp) {
         overnightSpread_ = sp;
         return *this;
@@ -328,6 +353,21 @@ namespace QuantLib {
 
     MakeOIS& MakeOIS::withAveragingMethod(RateAveraging::Type averagingMethod) {
         averagingMethod_ = averagingMethod;
+        return *this;
+    }
+
+    MakeOIS& MakeOIS::withLookbackDays(Natural lookbackDays) {
+        lookbackDays_ = lookbackDays;
+        return *this;
+    }
+
+    MakeOIS& MakeOIS::withLockoutDays(Natural lockoutDays) {
+        lockoutDays_ = lockoutDays;
+        return *this;
+    }
+
+    MakeOIS& MakeOIS::withObservationShift(bool applyObservationShift) {
+        applyObservationShift_ = applyObservationShift;
         return *this;
     }
 

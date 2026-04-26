@@ -10,7 +10,7 @@
  under the terms of the QuantLib license.  You should have received a
  copy of the license along with this program; if not, please email
  <quantlib-dev@lists.sf.net>. The license is also available online at
- <http://quantlib.org/license.shtml>.
+ <https://www.quantlib.org/license.shtml>.
 
  This program is distributed in the hope that it will be useful, but WITHOUT
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
@@ -62,13 +62,13 @@ BOOST_AUTO_TEST_SUITE(SquareRootCLVModelTests)
 
 class CLVModelPayoff : public PlainVanillaPayoff {
   public:
-    CLVModelPayoff(Option::Type type, Real strike, ext::function<Real(Real)> g)
+    CLVModelPayoff(Option::Type type, Real strike, std::function<Real(Real)> g)
     : PlainVanillaPayoff(type, strike), g_(std::move(g)) {}
 
     Real operator()(Real x) const override { return PlainVanillaPayoff::operator()(g_(x)); }
 
   private:
-    const ext::function<Real(Real)> g_;
+    const std::function<Real(Real)> g_;
 };
 
 typedef boost::math::non_central_chi_squared_distribution<Real> chi_squared_type;
@@ -136,7 +136,7 @@ BOOST_AUTO_TEST_CASE(testSquareRootCLVVanillaPricing) {
 
         const CLVModelPayoff clvModelPayoff(optionType, strike, g);
 
-        const ext::function<Real(Real)> f = [&](Real xi) -> Real {
+        const std::function<Real(Real)> f = [&](Real xi) -> Real {
             return clvModelPayoff(xi) * boost::math::pdf(dist, xi);
         };
 
@@ -204,7 +204,7 @@ BOOST_AUTO_TEST_CASE(testSquareRootCLVMappingFunction) {
     const SquareRootCLVModel model(
         bsProcess, sqrtProcess, calibrationDates, 14, 1-1e-10, 1e-10);
 
-    const ext::function<Real(Time, Real)> g = model.g();
+    const std::function<Real(Time, Real)> g = model.g();
 
     const Real strikes[] = { 80, 100, 120 };
     const Size offsets[] = { 92, 182, 183, 184, 185, 186, 365 };
@@ -230,7 +230,7 @@ BOOST_AUTO_TEST_CASE(testSquareRootCLVMappingFunction) {
 
             const CLVModelPayoff clvModelPayoff(optionType, strike, [&](Real x) { return g(t, x); });
 
-            const ext::function<Real(Real)> f = [&](Real xi) -> Real {
+            const std::function<Real(Real)> f = [&](Real xi) -> Real {
                 return clvModelPayoff(xi) * boost::math::pdf(dist, xi);
             };
 
@@ -306,7 +306,7 @@ class SquareRootCLVCalibrationFunction : public CostFunction {
                 bsProcess_, sqrtProcess, calibrationDates_,
                 14, 1-1e-14, 1e-14);
 
-        const ext::function<Real(Time, Real)> gSqrt = clvSqrtModel.g();
+        const std::function<Real(Time, Real)> gSqrt = clvSqrtModel.g();
 
         Array retVal(resetDates_.size()*strikes_.size());
 
@@ -508,7 +508,7 @@ class NonZeroConstraint : public Constraint {
 //            clvCalibrationDates.begin(), clvCalibrationDates.end()),
 //        14, 1-1e-14, 1e-14);
 //
-//    const ext::function<Real(Time, Real)> gSqrt = clvSqrtModel.g();
+//    const std::function<Real(Time, Real)> gSqrt = clvSqrtModel.g();
 //
 //    const ext::shared_ptr<SimpleQuote> vol(
 //        ext::make_shared<SimpleQuote>(0.1));
@@ -548,7 +548,7 @@ class NonZeroConstraint : public Constraint {
 //    };
 //
 //    const Size nScenarios = 20000;
-//    Array refVols(resetIndices.size()*LENGTH(strikes));
+//    Array refVols(resetIndices.size()*std::size(strikes));
 //
 //    // finite difference calibration of Heston SLV model
 //
@@ -584,7 +584,7 @@ class NonZeroConstraint : public Constraint {
 //
 //    std::vector<std::vector<GeneralStatistics> > slvStats(
 //        calibrationDates.size()-2,
-//            std::vector<GeneralStatistics>(LENGTH(strikes)));
+//            std::vector<GeneralStatistics>(std::size(strikes)));
 //
 //    typedef SobolBrownianBridgeRsg rsg_type;
 //    typedef MultiPathGenerator<rsg_type>::sample_type sample_type;
@@ -602,7 +602,7 @@ class NonZeroConstraint : public Constraint {
 //            const Real S_t1 = path.value[0][resetIndices[i]];
 //            const Real S_T1 = path.value[0][maturityIndices[i]];
 //
-//            for (Size j=0; j < LENGTH(strikes); ++j) {
+//            for (Size j=0; j < std::size(strikes); ++j) {
 //                const Real strike = strikes[j];
 //                    slvStats[i][j].add((strike < 1.0)
 //                        ? Real(S_t1 * std::max(0.0, strike - S_T1/S_t1))
@@ -620,7 +620,7 @@ class NonZeroConstraint : public Constraint {
 //        const ext::shared_ptr<Exercise> exercise(
 //            ext::make_shared<EuropeanExercise>(maturityDate));
 //
-//        for (Size j=0; j < LENGTH(strikes); ++j) {
+//        for (Size j=0; j < std::size(strikes); ++j) {
 //            const Real strike = strikes[j];
 //            const Real npv = slvStats[i][j].mean()*df;
 //
@@ -636,13 +636,13 @@ class NonZeroConstraint : public Constraint {
 //                QuantLib::detail::ImpliedVolatilityHelper::calculate(
 //                    *fwdOption, *fwdEngine, *vol, npv, 1e-8, 200, 1e-4, 2.0);
 //
-//            const Size idx = j + i*LENGTH(strikes);
+//            const Size idx = j + i*std::size(strikes);
 //            refVols[idx] = implVol;
 //        }
 //    }
 //
 //    SquareRootCLVCalibrationFunction costFunction(
-//        Array(strikes, strikes+LENGTH(strikes)),
+//        Array(strikes, strikes+std::size(strikes)),
 //        resetDates,
 //        maturityDates,
 //        bsProcess,

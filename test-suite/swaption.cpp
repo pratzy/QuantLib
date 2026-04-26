@@ -15,20 +15,22 @@
  under the terms of the QuantLib license.  You should have received a
  copy of the license along with this program; if not, please email
  <quantlib-dev@lists.sf.net>. The license is also available online at
- <http://quantlib.org/license.shtml>.
+ <https://www.quantlib.org/license.shtml>.
 
  This program is distributed in the hope that it will be useful, but WITHOUT
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
-#include "preconditions.hpp"
 #include "toplevelfixture.hpp"
 #include "utilities.hpp"
 #include <ql/cashflows/iborcoupon.hpp>
 #include <ql/instruments/swaption.hpp>
+#include <ql/instruments/makeswaption.hpp>
 #include <ql/instruments/makevanillaswap.hpp>
 #include <ql/instruments/makeois.hpp>
+#include <ql/indexes/swap/euriborswap.hpp>
+#include <ql/time/calendars/unitedstates.hpp>
 #include <ql/termstructures/yield/flatforward.hpp>
 #include <ql/termstructures/yield/zerospreadedtermstructure.hpp>
 #include <ql/indexes/ibor/euribor.hpp>
@@ -474,7 +476,7 @@ BOOST_AUTO_TEST_CASE(testVega) {
                                            vars.settlementDays*Days);
         for (auto& length : lengths) {
             for (Real strike : strikes) {
-                for (Size h=0; h<LENGTH(type); h++) {
+                for (Size h=0; h<std::size(type); h++) {
                     ext::shared_ptr<VanillaSwap> swap =
                         MakeVanillaSwap(length, vars.index, strike)
                             .withEffectiveDate(startDate)
@@ -820,7 +822,7 @@ BOOST_AUTO_TEST_CASE(testCashSettledSwaptions) {
     }
 }
 
-BOOST_AUTO_TEST_CASE(testImpliedVolatility, *precondition(if_speed(Faster))) {
+BOOST_AUTO_TEST_CASE(testImpliedVolatility) {
 
     BOOST_TEST_MESSAGE("Testing implied volatility for swaptions...");
 
@@ -831,6 +833,7 @@ BOOST_AUTO_TEST_CASE(testImpliedVolatility, *precondition(if_speed(Faster))) {
 
     Settlement::Type types[] = { Settlement::Physical, Settlement::Cash };
     Settlement::Method methods[] = { Settlement::PhysicalOTC, Settlement::ParYieldCurve };
+    Swaption::PriceType priceTypes[] = { Swaption::Spot, Swaption::Forward };
     // test data
     Rate strikes[] = { 0.02, 0.03, 0.04, 0.05, 0.06, 0.07 };
     Volatility vols[] = { 0.01, 0.05, 0.10, 0.20, 0.30, 0.70, 0.90 };
@@ -850,13 +853,14 @@ BOOST_AUTO_TEST_CASE(testImpliedVolatility, *precondition(if_speed(Faster))) {
                             .withFixedLegDayCount(vars.fixedDayCount)
                             .withFloatingLegSpread(0.0)
                             .withType(k);
-                    for (Size h=0; h<LENGTH(types); h++) {
+                    for (Size h=0; h<std::size(types); h++) {
+                      for (auto priceType : priceTypes) {
                         for (Real vol : vols) {
                             ext::shared_ptr<Swaption> swaption =
                                 vars.makeSwaption(swap, exerciseDate, vol, types[h], methods[h],
                                                   BlackSwaptionEngine::DiscountCurve);
                             // Black price
-                            Real value = swaption->NPV();
+                            Real value = priceType == Swaption::Spot? swaption->NPV() : swaption->result<Real>("forwardPrice");
                             Volatility implVol = 0.0;
                             try {
                                 implVol =
@@ -868,11 +872,12 @@ BOOST_AUTO_TEST_CASE(testImpliedVolatility, *precondition(if_speed(Faster))) {
                                                               1.0e-7,
                                                               4.0,
                                                               ShiftedLognormal,
-                                                              0.0);
+                                                              0.0,
+                                                              priceType);
                             } catch (std::exception& e) {
                                 // couldn't bracket?
                                 swaption->setPricingEngine(vars.makeEngine(0.0, BlackSwaptionEngine::DiscountCurve));
-                                Real value2 = swaption->NPV();
+                                Real value2 = priceType == Swaption::Spot? swaption->NPV() : swaption->result<Real>("forwardPrice");
                                 if (std::fabs(value-value2) < tolerance) {
                                     // ok, just skip:
                                     continue;
@@ -885,12 +890,13 @@ BOOST_AUTO_TEST_CASE(testImpliedVolatility, *precondition(if_speed(Faster))) {
                                             << "\natm level:  " << io::rate(swap->fairRate())
                                             << "\nvol:        " << io::volatility(vol)
                                             << "\nprice:      " << value << "\n"
+                                            << "\ntype:       " << (priceType == Swaption::Spot? "spot" : "forward") << "\n"
                                             << e.what());
                             }
                             if (std::fabs(implVol - vol) > tolerance) {
                                 // the difference might not matter
                                 swaption->setPricingEngine(vars.makeEngine(implVol, BlackSwaptionEngine::DiscountCurve));
-                                Real value2 = swaption->NPV();
+                                Real value2 = priceType == Swaption::Spot? swaption->NPV() : swaption->result<Real>("forwardPrice");
                                 if (std::fabs(value-value2) > tolerance) {
                                     BOOST_ERROR("implied vol failure: "
                                                 << exercise << "x" << length << " " << k
@@ -899,11 +905,13 @@ BOOST_AUTO_TEST_CASE(testImpliedVolatility, *precondition(if_speed(Faster))) {
                                                 << "\natm level:     " << io::rate(swap->fairRate())
                                                 << "\nvol:           " << io::volatility(vol)
                                                 << "\nprice:         " << value
+                                                << "\ntype:          " << (priceType == Swaption::Spot? "spot" : "forward") << "\n"
                                                 << "\nimplied vol:   " << io::volatility(implVol)
                                                 << "\nimplied price: " << value2);
                                 }
                             }
                         }
+                      }
                     }
                 }
             }
@@ -912,7 +920,7 @@ BOOST_AUTO_TEST_CASE(testImpliedVolatility, *precondition(if_speed(Faster))) {
 }
 
 
-BOOST_AUTO_TEST_CASE(testImpliedVolatilityOis, *precondition(if_speed(Fast))) {
+BOOST_AUTO_TEST_CASE(testImpliedVolatilityOis) {
 
     BOOST_TEST_MESSAGE("Testing implied volatility for overnight-indexed swaptions...");
 
@@ -923,6 +931,7 @@ BOOST_AUTO_TEST_CASE(testImpliedVolatilityOis, *precondition(if_speed(Fast))) {
 
     Settlement::Type types[] = { Settlement::Physical, Settlement::Cash };
     Settlement::Method methods[] = { Settlement::PhysicalOTC, Settlement::ParYieldCurve };
+    Swaption::PriceType priceTypes[] = { Swaption::Spot, Swaption::Forward };
     // test data
     Rate strikes[] = { 0.02, 0.03, 0.04, 0.05, 0.06, 0.07 };
     Volatility vols[] = { 0.01, 0.05, 0.10, 0.20, 0.30, 0.70, 0.90 };
@@ -941,13 +950,14 @@ BOOST_AUTO_TEST_CASE(testImpliedVolatilityOis, *precondition(if_speed(Fast))) {
                             .withPaymentFrequency(Annual)
                             .withFixedLegDayCount(vars.fixedDayCount)
                             .withType(k);
-                    for (Size h=0; h<LENGTH(types); h++) {
+                    for (Size h=0; h<std::size(types); h++) {
+                      for (auto priceType : priceTypes) {
                         for (Real vol : vols) {
                             ext::shared_ptr<Swaption> swaption =
                                 vars.makeOISwaption(swap, exerciseDate, vol, types[h], methods[h],
                                                     BlackSwaptionEngine::DiscountCurve);
                             // Black price
-                            Real value = swaption->NPV();
+                            Real value = priceType == Swaption::Spot? swaption->NPV() : swaption->result<Real>("forwardPrice");
                             Volatility implVol = 0.0;
                             try {
                                 implVol =
@@ -959,11 +969,12 @@ BOOST_AUTO_TEST_CASE(testImpliedVolatilityOis, *precondition(if_speed(Fast))) {
                                                               1.0e-7,
                                                               4.0,
                                                               ShiftedLognormal,
-                                                              0.0);
+                                                              0.0,
+                                                              priceType);
                             } catch (std::exception& e) {
                                 // couldn't bracket?
                                 swaption->setPricingEngine(vars.makeEngine(0.0, BlackSwaptionEngine::DiscountCurve));
-                                Real value2 = swaption->NPV();
+                                Real value2 = priceType == Swaption::Spot? swaption->NPV() : swaption->result<Real>("forwardPrice");
                                 if (std::fabs(value-value2) < tolerance) {
                                     // ok, just skip:
                                     continue;
@@ -976,12 +987,13 @@ BOOST_AUTO_TEST_CASE(testImpliedVolatilityOis, *precondition(if_speed(Fast))) {
                                             << "\natm level:  " << io::rate(swap->fairRate())
                                             << "\nvol:        " << io::volatility(vol)
                                             << "\nprice:      " << value << "\n"
+                                            << "\ntype:       " << (priceType == Swaption::Spot? "spot" : "forward") << "\n"
                                             << e.what());
                             }
                             if (std::fabs(implVol - vol) > tolerance) {
                                 // the difference might not matter
                                 swaption->setPricingEngine(vars.makeEngine(implVol, BlackSwaptionEngine::DiscountCurve));
-                                Real value2 = swaption->NPV();
+                                Real value2 = priceType == Swaption::Spot? swaption->NPV() : swaption->result<Real>("forwardPrice");
                                 if (std::fabs(value-value2) > tolerance) {
                                     BOOST_ERROR("implied vol failure: "
                                                 << exercise << "x" << length << " " << k
@@ -990,11 +1002,13 @@ BOOST_AUTO_TEST_CASE(testImpliedVolatilityOis, *precondition(if_speed(Fast))) {
                                                 << "\natm level:     " << io::rate(swap->fairRate())
                                                 << "\nvol:           " << io::volatility(vol)
                                                 << "\nprice:         " << value
+                                                << "\ntype:          " << (priceType == Swaption::Spot? "spot" : "forward") << "\n"
                                                 << "\nimplied vol:   " << io::volatility(implVol)
                                                 << "\nimplied price: " << value2);
                                 }
                             }
                         }
+                      }
                     }
                 }
             }
@@ -1049,7 +1063,7 @@ void checkSwaptionDelta(bool useBachelierVol)
         for (auto exercise : exercises) {
             for (auto& length : lengths) {
                 for (Real& strike : strikes) {
-                    for (Size h=0; h<LENGTH(type); h++) {
+                    for (Size h=0; h<std::size(type); h++) {
                         Volatility volatility = useBachelierVol ? vol / 100.0 : vol;
                         ext::shared_ptr<Engine> swaptionEngine = makeConstVolEngine<Engine>(
                             discountHandle, volatility);
@@ -1129,6 +1143,52 @@ BOOST_AUTO_TEST_CASE(testSwaptionDeltaInBachelierModel) {
     BOOST_TEST_MESSAGE("Testing swaption delta in Bachelier model...");
 
     checkSwaptionDelta<BachelierSwaptionEngine>(true);
+}
+
+BOOST_AUTO_TEST_CASE(testMakeSwaptionWithExerciseCalendar) {
+
+    BOOST_TEST_MESSAGE("Testing MakeSwaption with exercise calendar override...");
+
+    // Use a specific date where TARGET and US Settlement diverge:
+    // 1Y advance from Oct 9, 2015 gives Oct 10, 2016 (TARGET)
+    // vs Oct 11, 2016 (US), because Oct 10 is Columbus Day.
+    Date today(9, October, 2015);
+    Settings::instance().evaluationDate() = today;
+    RelinkableHandle<YieldTermStructure> termStructure;
+    termStructure.linkTo(flatRate(today, 0.05, Actual365Fixed()));
+
+    auto swapIndex = ext::make_shared<EuriborSwapIsdaFixA>(5*Years, termStructure);
+    Calendar targetCalendar = swapIndex->fixingCalendar();
+    Calendar usCalendar = UnitedStates(UnitedStates::Settlement);
+
+    // Default uses swap index's fixing calendar (TARGET)
+    Swaption defaultSwaption =
+        MakeSwaption(swapIndex, 1*Years, 0.05);
+    Date defaultExercise = defaultSwaption.exercise()->dates().front();
+
+    Date expected = targetCalendar.advance(
+        targetCalendar.adjust(today), 1*Years, ModifiedFollowing);
+    BOOST_CHECK_EQUAL(defaultExercise, expected);
+
+    // With custom calendar, exercise date differs
+    Swaption customSwaption =
+        MakeSwaption(swapIndex, 1*Years, 0.05)
+            .withExerciseCalendar(usCalendar);
+    Date customExercise = customSwaption.exercise()->dates().front();
+
+    Date expectedCustom = usCalendar.advance(
+        usCalendar.adjust(today), 1*Years, ModifiedFollowing);
+    BOOST_CHECK_EQUAL(customExercise, expectedCustom);
+    BOOST_CHECK_NE(customExercise, defaultExercise);
+
+    // Explicit withExerciseDate takes precedence over calendar
+    Date explicitDate = targetCalendar.advance(today, 6*Months);
+    Date fixingDate = targetCalendar.advance(today, 1*Years);
+    Swaption explicitSwaption =
+        MakeSwaption(swapIndex, fixingDate, 0.05)
+            .withExerciseCalendar(usCalendar)
+            .withExerciseDate(explicitDate);
+    BOOST_CHECK_EQUAL(explicitSwaption.exercise()->dates().front(), explicitDate);
 }
 
 BOOST_AUTO_TEST_SUITE_END()

@@ -10,7 +10,7 @@
  under the terms of the QuantLib license.  You should have received a
  copy of the license along with this program; if not, please email
  <quantlib-dev@lists.sf.net>. The license is also available online at
- <http://quantlib.org/license.shtml>.
+ <https://www.quantlib.org/license.shtml>.
 
  This program is distributed in the hope that it will be useful, but WITHOUT
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
@@ -27,7 +27,7 @@ namespace QuantLib {
 
     CommodityType::CommodityType(const std::string& name,
                                  const std::string& code) {
-        std::map<std::string, ext::shared_ptr<CommodityType::Data> >::const_iterator i = commodityTypes_.find(code);
+        auto i = commodityTypes_.find(code);
         if (i != commodityTypes_.end())
             data_ = i->second;
         else {

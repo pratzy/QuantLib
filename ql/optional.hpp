@@ -10,7 +10,7 @@
  under the terms of the QuantLib license.  You should have received a
  copy of the license along with this program; if not, please email
  <quantlib-dev@lists.sf.net>. The license is also available online at
- <http://quantlib.org/license.shtml>.
+ <https://www.quantlib.org/license.shtml>.
 
  This program is distributed in the hope that it will be useful, but WITHOUT
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
@@ -29,25 +29,21 @@
 #if defined(QL_USE_STD_OPTIONAL)
 #include <optional>
 #else
+// Deprecated in version 1.39
+#pragma message("Warning: using boost::optional is deprecated.  Enable std::optional instead.")
 #include <boost/optional.hpp>
 #endif
 
-namespace QuantLib {
-
-    namespace ext {
+namespace QuantLib::ext {
 
         #if defined(QL_USE_STD_OPTIONAL)
         using std::optional;                    // NOLINT(misc-unused-using-decls)
-        // here we can assume C++17
         inline constexpr const std::nullopt_t& nullopt = std::nullopt;
         #else
         using boost::optional;                  // NOLINT(misc-unused-using-decls)
-        // here we can't
-        extern const boost::none_t& nullopt;
+        inline constexpr const boost::none_t& nullopt = boost::none;
         #endif
 
     }
-
-}
 
 #endif

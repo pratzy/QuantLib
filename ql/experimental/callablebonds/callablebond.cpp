@@ -11,7 +11,7 @@
  under the terms of the QuantLib license.  You should have received a
  copy of the license along with this program; if not, please email
  <quantlib-dev@lists.sf.net>. The license is also available online at
- <http://quantlib.org/license.shtml>.
+ <https://www.quantlib.org/license.shtml>.
 
  This program is distributed in the hope that it will be useful, but WITHOUT
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
@@ -157,7 +157,7 @@ namespace QuantLib {
 
     class OASHelper {
     public:
-        OASHelper(const ext::function<Real(Real)>& npvhelper,
+        OASHelper(const std::function<Real(Real)>& npvhelper,
                   Real targetValue):
             npvhelper_(npvhelper),
             targetValue_(targetValue)
@@ -169,7 +169,7 @@ namespace QuantLib {
             return targetValue_ - npvhelper_(x);
         }
     private:
-        const ext::function<Real(Real)>& npvhelper_;
+        const std::function<Real(Real)>& npvhelper_;
         Real targetValue_;
     };
 
@@ -290,8 +290,9 @@ namespace QuantLib {
             settlement = settlementDate();
 
         Real dirtyPrice = cleanPrice + accruedAmount(settlement);
+        dirtyPrice /= 100.0 / notional(settlement);
 
-        ext::function<Real(Real)> f = NPVSpreadHelper(*this);
+        std::function<Real(Real)> f = NPVSpreadHelper(*this);
         OASHelper obj(f, dirtyPrice);
 
         Brent solver;
@@ -327,9 +328,9 @@ namespace QuantLib {
                              compounding,
                              frequency);
 
-        ext::function<Real(Real)> f = NPVSpreadHelper(*this);
+        std::function<Real(Real)> f = NPVSpreadHelper(*this);
 
-        Real P = f(oas) - accruedAmount(settlement);
+        Real P = f(oas) * 100.0 / notional(settlement) - accruedAmount(settlement);
 
         return P;
     }
@@ -444,38 +445,34 @@ namespace QuantLib {
                 arguments->callabilityPrices.push_back(i->price().amount());
 
                 if (i->price().type() == Bond::Price::Clean) {
-                    /* calling accrued() forces accrued interest to be zero
-                       if future option date is also coupon date, so that dirty
-                       price = clean price. Use here because callability is
-                       always applied before coupon in the tree engine.
-                    */
-                    arguments->callabilityPrices.back() += this->accrued(i->date());
+                    /* Convert clean call price to dirty using accrued interest
+                       at the call date. We ignore ex-coupon conventions here
+                       because the call is an issuer action governed by the
+                       indenture: the holder receives the call price plus accrued
+                       from the last payment date. Using market (ex-coupon) accrued
+                       would create an inconsistency with the tree's continuation
+                       value, which includes future coupons filtered at the
+                       settlement date (see GitHub issue #2236). */
+                    Date callDate = i->date();
+                    Real callAccrued = 0.0;
+                    for (const auto& cf : cashflows_) {
+                        if (!cf->hasOccurred(callDate, false)) {
+                            auto coupon = ext::dynamic_pointer_cast<Coupon>(cf);
+                            if (coupon != nullptr) {
+                                Real acc = coupon->accruedAmount(callDate);
+                                if (coupon->tradingExCoupon(callDate))
+                                    acc = coupon->amount() + acc;
+                                callAccrued = acc / notional(callDate) * 100.0;
+                            }
+                            break;
+                        }
+                    }
+                    arguments->callabilityPrices.back() += callAccrued;
                 }
             }
         }
 
         arguments->spread = 0.0;
-    }
-
-
-    Real CallableBond::accrued(Date settlement) const {
-
-        if (settlement == Date()) settlement = settlementDate();
-
-        const bool IncludeToday = false;
-        for (const auto& cashflow : cashflows_) {
-            // the first coupon paying after d is the one we're after
-            if (!cashflow->hasOccurred(settlement, IncludeToday)) {
-                ext::shared_ptr<Coupon> coupon = ext::dynamic_pointer_cast<Coupon>(cashflow);
-                if (coupon != nullptr)
-                    // !!!
-                    return coupon->accruedAmount(settlement) /
-                           notional(settlement) * 100.0;
-                else
-                    return 0.0;
-            }
-        }
-        return 0.0;
     }
 
 

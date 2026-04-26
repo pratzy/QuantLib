@@ -10,7 +10,7 @@
  under the terms of the QuantLib license.  You should have received a
  copy of the license along with this program; if not, please email
  <quantlib-dev@lists.sf.net>. The license is also available online at
- <http://quantlib.org/license.shtml>.
+ <https://www.quantlib.org/license.shtml>.
 
  This program is distributed in the hope that it will be useful, but WITHOUT
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
@@ -43,7 +43,7 @@ namespace QuantLib {
         : payoff_(std::move(payoff)), exercise_(std::move(exercise)) {}
         void setupArguments(PricingEngine::arguments*) const override;
         ext::shared_ptr<Payoff> payoff() const { return payoff_; }
-        ext::shared_ptr<Exercise> exercise() const { return exercise_; };
+        ext::shared_ptr<Exercise> exercise() const { return exercise_; }
       protected:
         // arguments
         ext::shared_ptr<Payoff> payoff_;

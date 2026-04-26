@@ -11,7 +11,7 @@
  under the terms of the QuantLib license.  You should have received a
  copy of the license along with this program; if not, please email
  <quantlib-dev@lists.sf.net>. The license is also available online at
- <http://quantlib.org/license.shtml>.
+ <https://www.quantlib.org/license.shtml>.
 
  This program is distributed in the hope that it will be useful, but WITHOUT
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
@@ -62,17 +62,15 @@ std::vector<ext::shared_ptr<BootstrapHelper<T> > > makeHelpers(
         const ext::shared_ptr<I> &ii, const Period &observationLag,
         const Calendar &calendar,
         const BusinessDayConvention &bdc,
-        const DayCounter &dc,
-        const Handle<YieldTermStructure>& discountCurve) {
+        const DayCounter &dc) {
 
     std::vector<ext::shared_ptr<BootstrapHelper<T> > > instruments;
     for (Size i=0; i<N; i++) {
         Date maturity = iiData[i].date;
         Handle<Quote> quote(ext::shared_ptr<Quote>(
                                 new SimpleQuote(iiData[i].rate/100.0)));
-        ext::shared_ptr<BootstrapHelper<T> > anInstrument(new U(quote, observationLag, maturity,
-                                                                calendar, bdc, dc, ii,
-                                                                CPI::AsIndex, discountCurve));
+        auto anInstrument = ext::make_shared<U>(quote, observationLag, maturity,
+                                                calendar, bdc, dc, ii, CPI::Flat);
         instruments.push_back(anInstrument);
     }
 
@@ -239,12 +237,11 @@ struct CommonVars {
         }
 
         // now build the helpers ...
-        std::vector<ext::shared_ptr<BootstrapHelper<ZeroInflationTermStructure> > > helpers =
+        auto helpers =
             makeHelpers<ZeroInflationTermStructure,ZeroCouponInflationSwapHelper,
             ZeroInflationIndex>(zciisData, zciisDataLength, ii,
                                 observationLag,
-                                calendar, convention, dcZCIIS,
-                                Handle<YieldTermStructure>(nominalTS));
+                                calendar, convention, dcZCIIS);
 
         // we can use historical or first ZCIIS for this
         // we know historical is WAY off market-implied, so use market implied flat.
@@ -367,7 +364,7 @@ BOOST_AUTO_TEST_CASE(cpicapfloorpricesurface) {
     }
 
     // remove circular refernce
-    common.hcpi.linkTo(ext::shared_ptr<ZeroInflationTermStructure>());
+    common.hcpi.reset();
 }
 
 BOOST_AUTO_TEST_CASE(cpicapfloorpricer) {
@@ -401,8 +398,8 @@ BOOST_AUTO_TEST_CASE(cpicapfloorpricer) {
     Calendar fixCalendar = UnitedKingdom(), payCalendar = UnitedKingdom();
     BusinessDayConvention fixConvention(Unadjusted), payConvention(ModifiedFollowing);
     Rate strike(0.03);
-    Real baseCPI = common.ii->fixing(fixCalendar.adjust(startDate-common.observationLag,fixConvention));
-    CPI::InterpolationType observationInterpolation = CPI::AsIndex;
+    CPI::InterpolationType observationInterpolation = CPI::Linear; // because the surface interpolates
+    Real baseCPI = CPI::laggedFixing(common.ii, startDate, common.observationLag, observationInterpolation);
     CPICapFloor aCap(Option::Call,
                      nominal,
                      startDate,   // start date of contract (only)
@@ -429,7 +426,7 @@ BOOST_AUTO_TEST_CASE(cpicapfloorpricer) {
                << cached << " vs " << aCap.NPV());
 
     // remove circular refernce
-    common.hcpi.linkTo(ext::shared_ptr<ZeroInflationTermStructure>());
+    common.hcpi.reset();
 }
 
 BOOST_AUTO_TEST_SUITE_END()

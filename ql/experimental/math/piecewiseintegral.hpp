@@ -10,7 +10,7 @@
  under the terms of the QuantLib license.  You should have received a
  copy of the license along with this program; if not, please email
  <quantlib-dev@lists.sf.net>. The license is also available online at
- <http://quantlib.org/license.shtml>.
+ <https://www.quantlib.org/license.shtml>.
 
  This program is distributed in the hope that it will be useful, but WITHOUT
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
@@ -42,10 +42,10 @@ class PiecewiseIntegral : public Integrator {
                       bool avoidCriticalPoints = true);
 
   protected:
-    Real integrate(const ext::function<Real(Real)>& f, Real a, Real b) const override;
+    Real integrate(const std::function<Real(Real)>& f, Real a, Real b) const override;
 
   private:
-    Real integrate_h(const ext::function<Real(Real)> &f, Real a,
+    Real integrate_h(const std::function<Real(Real)> &f, Real a,
                      Real b) const;
     const ext::shared_ptr<Integrator> integrator_;
     std::vector<Real> criticalPoints_;
@@ -54,7 +54,7 @@ class PiecewiseIntegral : public Integrator {
 
 // inline
 
-inline Real PiecewiseIntegral::integrate_h(const ext::function<Real(Real)> &f,
+inline Real PiecewiseIntegral::integrate_h(const std::function<Real(Real)> &f,
                                            Real a, Real b) const {
 
     if (!close_enough(a, b))
@@ -63,7 +63,7 @@ inline Real PiecewiseIntegral::integrate_h(const ext::function<Real(Real)> &f,
         return 0.0;
 }
 
-inline Real PiecewiseIntegral::integrate(const ext::function<Real(Real)> &f,
+inline Real PiecewiseIntegral::integrate(const std::function<Real(Real)> &f,
                                          Real a, Real b) const {
 
     auto a0 = std::lower_bound(criticalPoints_.begin(), criticalPoints_.end(), a);

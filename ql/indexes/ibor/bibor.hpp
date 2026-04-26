@@ -10,7 +10,7 @@
  under the terms of the QuantLib license.  You should have received a
  copy of the license along with this program; if not, please email
  <quantlib-dev@lists.sf.net>. The license is also available online at
- <http://quantlib.org/license.shtml>.
+ <https://www.quantlib.org/license.shtml>.
 
  This program is distributed in the hope that it will be useful, but WITHOUT
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
@@ -46,14 +46,14 @@ namespace QuantLib {
     };
 
 
-    //! 1-month %Euribor index
+    //! 1-month %Bibor index
     class Bibor1M : public Bibor {
       public:
         explicit Bibor1M(const Handle<YieldTermStructure>& h = {})
         : Bibor(Period(1, Months), h) {}
     };
 
-    //! 2-months %Euribor index
+    //! 2-months %Bibor index
     class Bibor2M : public Bibor {
       public:
         explicit Bibor2M(const Handle<YieldTermStructure>& h = {})
@@ -72,13 +72,6 @@ namespace QuantLib {
       public:
         explicit Bibor6M(const Handle<YieldTermStructure>& h = {})
         : Bibor(Period(6, Months), h) {}
-    };
-
-    //! 9-months %Bibor index
-    class Bibor9M : public Bibor {
-      public:
-        explicit Bibor9M(const Handle<YieldTermStructure>& h = {})
-        : Bibor(Period(9, Months), h) {}
     };
 
     //! 1-year %Bibor index

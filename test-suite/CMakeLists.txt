@@ -6,6 +6,7 @@ set(QL_TEST_SOURCES
     asianoptions.cpp
     assetswap.cpp
     autocovariances.cpp
+	bacheliercalculator.cpp
     barrieroption.cpp
     basismodels.cpp
     basisswapratehelpers.cpp
@@ -14,7 +15,9 @@ set(QL_TEST_SOURCES
     bermudanswaption.cpp
     binaryoption.cpp
     blackdeltacalculator.cpp
+	blackcalculator.cpp
     blackformula.cpp
+    blackvolsurfacedelta.cpp
     bondforward.cpp
     bonds.cpp
     brownianbridge.cpp
@@ -38,7 +41,6 @@ set(QL_TEST_SOURCES
     convertiblebonds.cpp
     covariance.cpp
     creditdefaultswap.cpp
-    creditriskplus.cpp
     crosscurrencyratehelpers.cpp
     currency.cpp
     curvestates.cpp
@@ -66,9 +68,11 @@ set(QL_TEST_SOURCES
     fdmlinearop.cpp
     fdsabr.cpp
     fittedbonddiscountcurve.cpp
+    floatfloatswap.cpp
     forwardoption.cpp
     forwardrateagreement.cpp
     functions.cpp
+    fxforward.cpp
     garch.cpp
     gaussianquadratures.cpp
     gjrgarchmodel.cpp
@@ -88,6 +92,7 @@ set(QL_TEST_SOURCES
     instruments.cpp
     integrals.cpp
     interestrates.cpp
+    interpolatedsmilesection.cpp
     interpolations.cpp
     jumpdiffusion.cpp
     lazyobject.cpp
@@ -108,6 +113,8 @@ set(QL_TEST_SOURCES
     mclongstaffschwartzengine.cpp
     mersennetwister.cpp
     money.cpp
+    multipleresetscoupons.cpp
+    multipleresetsswap.cpp
     noarbsabr.cpp
     normalclvmodel.cpp
     nthorderderivativeop.cpp
@@ -124,12 +131,13 @@ set(QL_TEST_SOURCES
     partialtimebarrieroption.cpp
     pathgenerator.cpp
     period.cpp
+    perpetualfutures.cpp
+    piecewiseblackvariancesurface.cpp
     piecewiseyieldcurve.cpp
     piecewisezerospreadedtermstructure.cpp
     preconditions.cpp
     prices.cpp
     quantlibglobalfixture.cpp
-    quantlibtestsuite.cpp
     quantooption.cpp
     quotes.cpp
     rangeaccrual.cpp
@@ -137,16 +145,14 @@ set(QL_TEST_SOURCES
     riskstats.cpp
     rngtraits.cpp
     rounding.cpp
-    sampledcurve.cpp
     schedule.cpp
     settings.cpp
     shortratemodels.cpp
     sofrfutures.cpp
+    softbarrieroption.cpp
     solvers.cpp
-    spreadoption.cpp
     squarerootclvmodel.cpp
     stats.cpp
-    subperiodcoupons.cpp
     svivolatility.cpp
     swap.cpp
     swapforwardmappings.cpp
@@ -159,7 +165,6 @@ set(QL_TEST_SOURCES
     timeseries.cpp
     tqreigendecomposition.cpp
     tracing.cpp
-    transformedgrid.cpp
     twoassetbarrieroption.cpp
     twoassetcorrelationoption.cpp
     ultimateforwardtermstructure.cpp
@@ -172,6 +177,7 @@ set(QL_TEST_SOURCES
     xoshiro256starstar.cpp
     zabr.cpp
     zerocouponswap.cpp
+    zigguratgaussian.cpp
 )
 
 set(QL_TEST_HEADERS
@@ -183,63 +189,35 @@ set(QL_TEST_HEADERS
     utilities.hpp
 )
 
-set(QL_BENCHMARK_SOURCES
-    quantlibbenchmark.cpp
-
-    americanoption.cpp
-    asianoptions.cpp
-    barrieroption.cpp
-    basketoption.cpp
-    batesmodel.cpp
-    convertiblebonds.cpp
-    digitaloption.cpp
-    dividendoption.cpp
-    europeanoption.cpp
-    fdheston.cpp
-    hestonmodel.cpp
-    interpolations.cpp
-    jumpdiffusion.cpp
-    lowdiscrepancysequences.cpp
-    marketmodel_cms.cpp
-    marketmodel_smm.cpp
-    preconditions.cpp                   preconditions.hpp
-    quantooption.cpp
-    quantlibglobalfixture.cpp			quantlibglobalfixture.hpp
-    riskstats.cpp
-    shortratemodels.cpp
-    utilities.cpp                       utilities.hpp
-                                        swaptionvolstructuresutilities.hpp
-)
 
 if (QL_BUILD_TEST_SUITE)
-    add_executable(ql_test_suite ${QL_TEST_SOURCES} ${QL_TEST_HEADERS})
-    set_target_properties(ql_test_suite PROPERTIES OUTPUT_NAME "quantlib-test-suite")
-    set_source_files_properties(quantlibtestsuite.cpp PROPERTIES SKIP_UNITY_BUILD_INCLUSION true)
-    target_link_libraries(ql_test_suite PRIVATE
-        ql_library
-        ${QL_THREAD_LIBRARIES})
+    add_library(ql_test OBJECT ${QL_TEST_SOURCES} ${QL_TEST_HEADERS})
+    if (NOT Boost_USE_STATIC_LIBS)
+        target_compile_definitions(ql_test PUBLIC BOOST_ALL_DYN_LINK)
+    endif()
     if(MSVC AND CMAKE_UNITY_BUILD)
         # for Unity builds, we need to add /bigobj
-        target_compile_options(ql_test_suite PRIVATE "/bigobj")
+        target_compile_options(ql_test PUBLIC "/bigobj")
     endif()
+    target_link_libraries(ql_test PUBLIC ql_library ${QL_THREAD_LIBRARIES})
+
+
+    add_executable(ql_test_suite quantlibtestsuite.cpp)
+    set_source_files_properties(quantlibtestsuite.cpp PROPERTIES SKIP_UNITY_BUILD_INCLUSION true)
+    set_target_properties(ql_test_suite PROPERTIES OUTPUT_NAME "quantlib-test-suite")
+    target_link_libraries(ql_test_suite PRIVATE ql_test) 
+
     if (QL_INSTALL_TEST_SUITE)
         install(TARGETS ql_test_suite RUNTIME DESTINATION ${QL_INSTALL_BINDIR})
     endif()
     add_test(NAME quantlib_test_suite COMMAND ql_test_suite --log_level=message)
-endif()
 
-IF (QL_BUILD_BENCHMARK)
-    add_executable(ql_benchmark ${QL_BENCHMARK_SOURCES})
+
+    add_executable(ql_benchmark quantlibbenchmark.cpp)
     set_target_properties(ql_benchmark PROPERTIES OUTPUT_NAME "quantlib-benchmark")
-    set_source_files_properties(quantlibbenchmark.cpp PROPERTIES SKIP_UNITY_BUILD_INCLUSION true)
-    target_link_libraries(ql_benchmark PRIVATE
-        ql_library
-        ${QL_THREAD_LIBRARIES})
-    if(MSVC AND CMAKE_UNITY_BUILD)
-        # for Unity builds, we need to add /bigobj
-        target_compile_options(ql_benchmark PRIVATE "/bigobj")
-    endif()
+    target_link_libraries(ql_benchmark PRIVATE ql_test)
     if (QL_INSTALL_BENCHMARK)
         install(TARGETS ql_benchmark RUNTIME DESTINATION ${QL_INSTALL_BINDIR})
     endif()
 endif()
+

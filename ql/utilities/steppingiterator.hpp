@@ -10,7 +10,7 @@
  under the terms of the QuantLib license.  You should have received a
  copy of the license along with this program; if not, please email
  <quantlib-dev@lists.sf.net>. The license is also available online at
- <http://quantlib.org/license.shtml>.
+ <https://www.quantlib.org/license.shtml>.
 
  This program is distributed in the hope that it will be useful, but WITHOUT
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
@@ -55,63 +55,20 @@ namespace QuantLib {
         using reference = typename std::iterator_traits<Iterator>::reference;
 
         step_iterator() = default;
+        step_iterator(const step_iterator& other) = default;
 
         explicit step_iterator(const Iterator& base, Size step)
         : base_(base), step_(static_cast<BigInteger>(step)) {}
 
         template <class OtherIterator>
         step_iterator(const step_iterator<OtherIterator>& i,
-                      std::enable_if_t<std::is_convertible
-                      <OtherIterator, Iterator>::value>* = nullptr)
+                      std::enable_if_t<std::is_convertible_v
+                      <OtherIterator, Iterator>>* = nullptr)
         : base_(i.base_), step_(static_cast<BigInteger>(i.step())) {}
 
-        // inspector
         Size step() const { return static_cast<Size>(this->step_); }
 
-        /*! \deprecated This class no longer inherits from boost::iterator_adaptor`.
-                        Deprecated in version 1.31.
-        */
-        [[deprecated("Do not use the boost::iterator_adaptor interface.")]]
-        Iterator base() const { return base_; }
-
-        /*! \deprecated This class no longer inherits from boost::iterator_adaptor`.
-                        Deprecated in version 1.31.
-        */
-        [[deprecated("Do not use the boost::iterator_adaptor interface.")]]
-        void increment() {
-            std::advance(base_, step_);
-        }
-
-        /*! \deprecated This class no longer inherits from boost::iterator_adaptor`.
-                        Deprecated in version 1.31.
-        */
-        [[deprecated("Do not use the boost::iterator_adaptor interface.")]]
-        void decrement() {
-            std::advance(base_, -step_);
-        }
-
-        /*! \deprecated This class no longer inherits from boost::iterator_adaptor`.
-                        Deprecated in version 1.31.
-        */
-        [[deprecated("Do not use the boost::iterator_adaptor interface.")]]
-        void advance(typename std::iterator_traits<Iterator>::difference_type n) {
-            base_ += n*(this->step_);
-        }
-
-        /*! \deprecated This class no longer inherits from boost::iterator_adaptor`.
-                        Deprecated in version 1.31.
-        */
-        [[deprecated("Do not use the boost::iterator_adaptor interface.")]]
-        typename std::iterator_traits<Iterator>::difference_type
-        distance_to(const step_iterator& i) const {
-            return (i.base_ - base_) / step_;
-        }
-
-        step_iterator& operator=(const step_iterator& other) {
-            base_ = other.base_;
-            step_ = other.step_;
-            return *this;
-        }
+        step_iterator& operator=(const step_iterator& other) = default;
 
         step_iterator& operator++() {
             base_ += step_;

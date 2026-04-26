@@ -10,14 +10,13 @@
  under the terms of the QuantLib license.  You should have received a
  copy of the license along with this program; if not, please email
  <quantlib-dev@lists.sf.net>. The license is also available online at
- <http://quantlib.org/license.shtml>.
+ <https://www.quantlib.org/license.shtml>.
 
  This program is distributed in the hope that it will be useful, but WITHOUT
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
-#include "preconditions.hpp"
 #include "toplevelfixture.hpp"
 #include "utilities.hpp"
 #include <ql/experimental/finitedifferences/dynprogvppintrinsicvalueengine.hpp>
@@ -62,7 +61,7 @@ BOOST_FIXTURE_TEST_SUITE(QuantLibTests, TopLevelFixture)
 
 BOOST_AUTO_TEST_SUITE(VppTests)
 
-ext::function<Real(Real)> constant_b(Real b) {
+std::function<Real(Real)> constant_b(Real b) {
     return [=](Real x){ return b; };
 }
 
@@ -282,7 +281,7 @@ BOOST_AUTO_TEST_CASE(testGemanRoncoroniProcess) {
     const Real alphaG    = 1.0;
     const Real x0G       = 1.1;
 
-    ext::function<Real (Real)> f = linear(alphaG, betaG);
+    std::function<Real (Real)> f = linear(alphaG, betaG);
 
     ext::shared_ptr<StochasticProcess1D> eouProcess(
         new ExtendedOrnsteinUhlenbeckProcess(speed, vol, x0G, f,
@@ -424,7 +423,7 @@ BOOST_AUTO_TEST_CASE(testKlugeExtOUSpreadOption) {
 
     ext::shared_ptr<ExtOUWithJumpsProcess>
                                            klugeProcess = createKlugeProcess();
-    ext::function<Real (Real)> f = linear(alphaG, betaG);
+    std::function<Real (Real)> f = linear(alphaG, betaG);
 
     ext::shared_ptr<ExtendedOrnsteinUhlenbeckProcess> extOUProcess(
         new ExtendedOrnsteinUhlenbeckProcess(speed, vol, x0G, f,
@@ -511,7 +510,7 @@ BOOST_AUTO_TEST_CASE(testVPPIntrinsicValue) {
     const Real expected[] = { 0.0, 2056.04, 11145.577778, 26452.04,
                               44512.461818, 62000.626667, 137591.911111};
 
-    for (Size i=0; i < LENGTH(efficiency); ++i) {
+    for (Size i=0; i < std::size(efficiency); ++i) {
         const Real heatRate = 1.0/efficiency[i];
 
         VanillaVPPOption option(heatRate, pMin, pMax, tMinUp, tMinDown,
@@ -532,7 +531,7 @@ BOOST_AUTO_TEST_CASE(testVPPIntrinsicValue) {
     }
 }
 
-BOOST_AUTO_TEST_CASE(testVPPPricing, *precondition(if_speed(Slow))) {
+BOOST_AUTO_TEST_CASE(testVPPPricing) {
     BOOST_TEST_MESSAGE("Testing VPP pricing using perfect foresight or FDM...");
 
     const Date today = Date(18, December, 2011);
@@ -717,7 +716,7 @@ BOOST_AUTO_TEST_CASE(testVPPPricing, *precondition(if_speed(Slow))) {
 
     // regression functions
     const Size dim = 1U;
-    std::vector<ext::function<Real(Array)> > v(
+    std::vector<std::function<Real(Array)> > v(
         LsmBasisSystem::multiPathBasisSystem(dim, 5U, LsmBasisSystem::Monomial));
 
     for (Size i = exercise->dates().size(); i > 0U; --i) {

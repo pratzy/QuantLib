@@ -11,7 +11,7 @@
  under the terms of the QuantLib license.  You should have received a
  copy of the license along with this program; if not, please email
  <quantlib-dev@lists.sf.net>. The license is also available online at
- <http://quantlib.org/license.shtml>.
+ <https://www.quantlib.org/license.shtml>.
 
  This program is distributed in the hope that it will be useful, but WITHOUT
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
@@ -29,7 +29,7 @@
 
 #include <ql/qldefines.hpp>
 #include <ql/math/array.hpp>
-#include <ql/functional.hpp>
+#include <functional>
 #include <vector>
 
 namespace QuantLib {
@@ -41,10 +41,10 @@ namespace QuantLib {
             Legendre, Chebyshev, Chebyshev2nd
         };
 
-        static std::vector<ext::function<Real(Real)> >
+        static std::vector<std::function<Real(Real)> >
         pathBasisSystem(Size order, PolynomialType type);
 
-        static std::vector<ext::function<Real(Array)> >
+        static std::vector<std::function<Real(Array)> >
         multiPathBasisSystem(Size dim, Size order, PolynomialType type);
     };
 

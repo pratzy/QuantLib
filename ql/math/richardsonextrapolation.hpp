@@ -10,7 +10,7 @@
  under the terms of the QuantLib license.  You should have received a
  copy of the license along with this program; if not, please email
  <quantlib-dev@lists.sf.net>. The license is also available online at
- <http://quantlib.org/license.shtml>.
+ <https://www.quantlib.org/license.shtml>.
 
  This program is distributed in the hope that it will be useful, but WITHOUT
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
@@ -25,7 +25,7 @@
 
 #include <ql/types.hpp>
 #include <ql/utilities/null.hpp>
-#include <ql/functional.hpp>
+#include <functional>
 
 namespace QuantLib {
 
@@ -47,7 +47,7 @@ namespace QuantLib {
            \param delta_h step size
            \param n if known, n is the order of convergence
          */
-        RichardsonExtrapolation(const ext::function<Real (Real)>& f,
+        RichardsonExtrapolation(const std::function<Real (Real)>& f,
                                 Real delta_h, Real n = Null<Real>());
 
 
@@ -66,7 +66,7 @@ namespace QuantLib {
         const Real delta_h_;
         const Real fdelta_h_;
         const Real n_;
-        const ext::function<Real (Real)> f_;
+        const std::function<Real (Real)> f_;
     };
 }
 

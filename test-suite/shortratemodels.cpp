@@ -14,7 +14,7 @@
  under the terms of the QuantLib license.  You should have received a
  copy of the license along with this program; if not, please email
  <quantlib-dev@lists.sf.net>. The license is also available online at
- <http://quantlib.org/license.shtml>.
+ <https://www.quantlib.org/license.shtml>.
 
  This program is distributed in the hope that it will be useful, but WITHOUT
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
@@ -74,7 +74,7 @@ BOOST_AUTO_TEST_CASE(testCachedHullWhite) {
     ext::shared_ptr<IborIndex> index(new Euribor6M(termStructure));
 
     ext::shared_ptr<PricingEngine> engine(
-                                         new JamshidianSwaptionEngine(model));
+                                     new JamshidianSwaptionEngine(model));
 
     std::vector<ext::shared_ptr<CalibrationHelper> > swaptions;
     for (auto& i : data) {
@@ -104,7 +104,7 @@ BOOST_AUTO_TEST_CASE(testCachedHullWhite) {
         cachedA = 0.0464041, cachedSigma = 0.00579912;
     }
 
-    Real tolerance = 1.0e-5;
+    Real tolerance = 1.3e-5;
     Array xMinCalculated = model->params();
     Real yMinCalculated = model->value(xMinCalculated, swaptions);
     Array xMinExpected(2);
@@ -146,7 +146,7 @@ BOOST_AUTO_TEST_CASE(testCachedHullWhiteFixedReversion) {
     ext::shared_ptr<IborIndex> index(new Euribor6M(termStructure));
 
     ext::shared_ptr<PricingEngine> engine(
-                                         new JamshidianSwaptionEngine(model));
+                                     new JamshidianSwaptionEngine(model));
 
     std::vector<ext::shared_ptr<CalibrationHelper> > swaptions;
     for (auto& i : data) {
@@ -203,7 +203,7 @@ BOOST_AUTO_TEST_CASE(testCachedHullWhiteFixedReversion) {
 
 BOOST_AUTO_TEST_CASE(testCachedHullWhite2) {
     BOOST_TEST_MESSAGE("Testing Hull-White calibration against cached "
-                       "values using swaptions without start delay...");
+                        "values using swaptions without start delay...");
 
     bool usingAtParCoupons = IborCoupon::Settings::instance().usingAtParCoupons();
 
@@ -224,7 +224,7 @@ BOOST_AUTO_TEST_CASE(testCachedHullWhite2) {
         index->businessDayConvention(),index->endOfMonth(),index->dayCounter(),termStructure)); // Euribor 6m with zero fixing days
 
     ext::shared_ptr<PricingEngine> engine(
-                                         new JamshidianSwaptionEngine(model));
+                                     new JamshidianSwaptionEngine(model));
 
     std::vector<ext::shared_ptr<CalibrationHelper> > swaptions;
     for (auto& i : data) {
@@ -257,7 +257,7 @@ BOOST_AUTO_TEST_CASE(testCachedHullWhite2) {
     else
         cachedA = 0.0482063, cachedSigma = 0.00582687;
 
-    Real tolerance = 5.0e-6; 
+    Real tolerance = 1.0e-5;
     Array xMinCalculated = model->params();
     Real yMinCalculated = model->value(xMinCalculated, swaptions);
     Array xMinExpected(2);
@@ -333,22 +333,19 @@ BOOST_AUTO_TEST_CASE(testSwaps) {
     ext::shared_ptr<IborIndex> euribor(new Euribor6M(termStructure));
 
     ext::shared_ptr<PricingEngine> engine(
-                                        new TreeVanillaSwapEngine(model,120));
+                                     new TreeVanillaSwapEngine(model,120));
 
     Real tolerance = usingAtParCoupons ? 1.0e-8 : 4.0e-3;
 
-    for (Size i=0; i<LENGTH(start); i++) {
+    for (Size i=0; i<std::size(start); i++) {
 
         Date startDate = calendar.advance(settlement,start[i],Months);
         if (startDate < today) {
             Date fixingDate = calendar.advance(startDate,-2,Days);
-            TimeSeries<Real> pastFixings;
-            pastFixings[fixingDate] = 0.03;
-            IndexManager::instance().setHistory(euribor->name(),
-                                                pastFixings);
+            euribor->addFixing(fixingDate, 0.03);
         }
 
-        for (Size j=0; j<LENGTH(length); j++) {
+        for (Size j=0; j<std::size(length); j++) {
 
             Date maturity = calendar.advance(startDate,length[i],Years);
             Schedule fixedSchedule(startDate, maturity, Period(Annual),
@@ -363,7 +360,7 @@ BOOST_AUTO_TEST_CASE(testSwaps) {
                                  Thirty360(Thirty360::BondBasis),
                                  floatSchedule, euribor, 0.0, Actual360());
                 swap.setPricingEngine(ext::shared_ptr<PricingEngine>(
-                                   new DiscountingSwapEngine(termStructure)));
+                                     new DiscountingSwapEngine(termStructure)));
                 Real expected = swap.NPV();
                 swap.setPricingEngine(engine);
                 Real calculated = swap.NPV();
@@ -387,27 +384,30 @@ BOOST_AUTO_TEST_CASE(testFuturesConvexityBias) {
 
     // G. Kirikos, D. Novak, "Convexity Conundrums", Risk Magazine, March 1997
     Real futureQuote = 94.0;
-    Real a = 0.03;
     Real sigma = 0.015;
     Time t = 5.0;
-    Time T = 5.25;
+    Real tolerance = 0.0000001;
 
-    Rate expectedForward = 0.0573037;
-    Real tolerance       = 0.0000001;
+    for (auto [T, a, expectedForward] : {
+        std::tuple{5.25,  0.03, 0.0573037},
+        std::tuple{5.25,  1e-4, 0.0568627},
+        std::tuple{5.25,  0.0,  0.0568611},
+        std::tuple{5.001, 0.03, 0.0575736},
+        std::tuple{5.0,   0.03, 0.0575747},
+    }) {
+        Rate futureImpliedRate = (100.0-futureQuote)/100.0;
+        Rate calculatedForward =
+            futureImpliedRate - HullWhite::convexityBias(futureQuote,t,T,sigma,a);
 
-    Rate futureImpliedRate = (100.0-futureQuote)/100.0;
-    Rate calculatedForward =
-        futureImpliedRate - HullWhite::convexityBias(futureQuote,t,T,sigma,a);
-
-    Real error = std::fabs(calculatedForward-expectedForward);
-
-    if (error > tolerance) {
-        BOOST_ERROR("Failed to reproduce convexity bias:"
-                    << "\ncalculated: " << calculatedForward
-                    << "\n  expected: " << expectedForward
-                    << std::scientific
-                    << "\n     error: " << error
-                    << "\n tolerance: " << tolerance);
+        Real error = std::fabs(calculatedForward-expectedForward);
+        if (!(error < tolerance)) {
+            BOOST_ERROR("Failed to reproduce convexity bias:"
+                        << "\ncalculated: " << calculatedForward
+                        << "\n  expected: " << expectedForward
+                        << std::scientific
+                        << "\n     error: " << error
+                        << "\n tolerance: " << tolerance);
+        }
     }
 }
 

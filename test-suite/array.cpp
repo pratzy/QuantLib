@@ -10,7 +10,7 @@
  under the terms of the QuantLib license.  You should have received a
  copy of the license along with this program; if not, please email
  <quantlib-dev@lists.sf.net>. The license is also available online at
- <http://quantlib.org/license.shtml>.
+ <https://www.quantlib.org/license.shtml>.
 
  This program is distributed in the hope that it will be useful, but WITHOUT
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
@@ -115,6 +115,20 @@ BOOST_AUTO_TEST_CASE(testConstruction) {
                         << calculated);
         }
     }
+
+    // recast initializer list to Real
+    Array a11{1, 2, 3, 4, 5};
+    if (a2.size() != size)
+        BOOST_ERROR("Array not of the required size"
+                    << "\n    required:  " << size
+                    << "\n    resulting: " << a2.size());
+    for (i=0; i<size; ++i) {
+        if (a11[i] != Real(i+1))
+            BOOST_ERROR(io::ordinal(i+1) << " element not with required value"
+                        << "\n    required:  " << Real(i+1)
+                        << "\n    resulting: " << a11[i]);
+    }
+
 }
 
 BOOST_AUTO_TEST_CASE(testArrayFunctions) {

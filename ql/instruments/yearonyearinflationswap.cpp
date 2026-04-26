@@ -11,7 +11,7 @@
  under the terms of the QuantLib license.  You should have received a
  copy of the license along with this program; if not, please email
  <quantlib-dev@lists.sf.net>. The license is also available online at
- <http://quantlib.org/license.shtml>.
+ <https://www.quantlib.org/license.shtml>.
 
  This program is distributed in the hope that it will be useful, but WITHOUT
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
@@ -39,6 +39,7 @@ namespace QuantLib {
                                                      Schedule yoySchedule,
                                                      ext::shared_ptr<YoYInflationIndex> yoyIndex,
                                                      const Period& observationLag,
+                                                     CPI::InterpolationType interpolation,
                                                      Spread spread,
                                                      DayCounter yoyDayCount,
                                                      Calendar paymentCalendar,
@@ -54,7 +55,8 @@ namespace QuantLib {
         .withCouponRates(fixedRate_, fixedDayCount_) // Simple compounding by default
         .withPaymentAdjustment(paymentConvention_);
 
-        Leg yoyLeg = yoyInflationLeg(yoySchedule_, paymentCalendar_, yoyIndex_, observationLag_)
+        Leg yoyLeg = yoyInflationLeg(yoySchedule_, paymentCalendar_, yoyIndex_,
+                                     observationLag_, interpolation)
         .withNotionals(nominal_)
         .withPaymentDayCounter(yoyDayCount_)
         .withPaymentAdjustment(paymentConvention_)
@@ -74,7 +76,6 @@ namespace QuantLib {
             payer_[1] = -1.0;
         }
     }
-
 
      void YearOnYearInflationSwap::setupArguments(PricingEngine::arguments* args) const {
 

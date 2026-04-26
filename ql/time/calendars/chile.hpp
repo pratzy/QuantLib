@@ -10,7 +10,7 @@
  under the terms of the QuantLib license.  You should have received a
  copy of the license along with this program; if not, please email
  <quantlib-dev@lists.sf.net>. The license is also available online at
- <http://quantlib.org/license.shtml>.
+ <https://www.quantlib.org/license.shtml>.
 
  This program is distributed in the hope that it will be useful, but WITHOUT
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
@@ -40,7 +40,7 @@ namespace QuantLib {
         <li>Easter Saturday</li>
         <li>Labour Day, May 1st</li>
         <li>Navy Day, May 21st</li>
-        <li>Day of Aboriginal People, June 21st (since 2021)</li>
+        <li>Day of Aboriginal People, around June 21st (observed on each Winter Solstice) (since 2021)</li>
         <li>Saint Peter and Saint Paul, June 29th (moved to the nearest Monday if it falls on a weekday)</li>
         <li>Our Lady of Mount Carmel, July 16th</li>
         <li>Assumption Day, August 15th</li>

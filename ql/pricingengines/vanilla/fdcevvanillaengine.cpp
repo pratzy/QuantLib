@@ -10,7 +10,7 @@
  under the terms of the QuantLib license.  You should have received a
  copy of the license along with this program; if not, please email
  <quantlib-dev@lists.sf.net>. The license is also available online at
- <http://quantlib.org/license.shtml>.
+ <https://www.quantlib.org/license.shtml>.
 
  This program is distributed in the hope that it will be useful, but WITHOUT
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
@@ -130,7 +130,7 @@ namespace QuantLib {
             ext::make_shared<CEVCalculator>(upperBound, alpha_, beta_));
 
         boundaries.push_back(ext::make_shared<FdmTimeDepDirichletBoundary>(
-            mesher, ext::function<Real (Real)>(upperBoundPrice),
+            mesher, std::function<Real (Real)>(upperBoundPrice),
             0, FdmTimeDepDirichletBoundary::Upper));
 
         const Real delta = (1-2*beta_)/(1-beta_);

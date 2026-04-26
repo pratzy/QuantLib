@@ -11,7 +11,7 @@
  under the terms of the QuantLib license.  You should have received a
  copy of the license along with this program; if not, please email
  <quantlib-dev@lists.sf.net>. The license is also available online at
- <http://quantlib.org/license.shtml>.
+ <https://www.quantlib.org/license.shtml>.
 
  This program is distributed in the hope that it will be useful, but WITHOUT
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
@@ -41,33 +41,33 @@ class SimpleQuote;
     class LocalVolTermStructure;
 
     struct HestonSLVFokkerPlanckFdmParams {
-        const Size xGrid, vGrid;
-        const Size tMaxStepsPerYear, tMinStepsPerYear;
-        const Real tStepNumberDecay;
+         Size xGrid, vGrid;
+         Size tMaxStepsPerYear, tMinStepsPerYear;
+         Real tStepNumberDecay;
 
         // Rannacher smoothing steps at the beginning
-        const Size nRannacherTimeSteps;
+         Size nRannacherTimeSteps;
 
-        const Size predictionCorretionSteps;
+         Size predictionCorretionSteps;
 
         // local volatility forward equation
-        const Real x0Density;
-        const Real localVolEpsProb;
-        const Size maxIntegrationIterations;
+         Real x0Density;
+         Real localVolEpsProb;
+         Size maxIntegrationIterations;
 
         // variance mesher definition
-        const Real vLowerEps, vUpperEps, vMin;
-        const Real v0Density, vLowerBoundDensity, vUpperBoundDensity;
+         Real vLowerEps, vUpperEps, vMin;
+         Real v0Density, vLowerBoundDensity, vUpperBoundDensity;
 
         // do not calculate leverage function if prob is smaller than eps
-        const Real leverageFctPropEps;
+         Real leverageFctPropEps;
 
         // algorithm to get to the start configuration at time point one
-        const FdmHestonGreensFct::Algorithm greensAlgorithm;
-        const FdmSquareRootFwdOp::TransformationType trafoType;
+         FdmHestonGreensFct::Algorithm greensAlgorithm;
+         FdmSquareRootFwdOp::TransformationType trafoType;
 
         // define finite difference scheme
-        const FdmSchemeDesc schemeDesc;
+         FdmSchemeDesc schemeDesc;
     };
 
     class HestonSLVFDMModel : public LazyObject {

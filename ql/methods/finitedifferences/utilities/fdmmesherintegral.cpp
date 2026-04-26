@@ -10,7 +10,7 @@
  under the terms of the QuantLib license.  You should have received a
  copy of the license along with this program; if not, please email
  <quantlib-dev@lists.sf.net>. The license is also available online at
- <http://quantlib.org/license.shtml>.
+ <https://www.quantlib.org/license.shtml>.
 
  This program is distributed in the hope that it will be useful, but WITHOUT
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
@@ -24,7 +24,7 @@
 namespace QuantLib {
     FdmMesherIntegral::FdmMesherIntegral(
         const ext::shared_ptr<FdmMesherComposite>& mesher,
-        const ext::function<Real(const Array&, const Array&)>& integrator1d)
+        const std::function<Real(const Array&, const Array&)>& integrator1d)
     : meshers_(mesher->getFdm1dMeshers().begin(),
                mesher->getFdm1dMeshers().end()),
       integrator1d_(integrator1d) {

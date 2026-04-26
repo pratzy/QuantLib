@@ -10,7 +10,7 @@
  under the terms of the QuantLib license.  You should have received a
  copy of the license along with this program; if not, please email
  <quantlib-dev@lists.sf.net>. The license is also available online at
- <http://quantlib.org/license.shtml>.
+ <https://www.quantlib.org/license.shtml>.
 
  This program is distributed in the hope that it will be useful, but WITHOUT
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
@@ -26,7 +26,8 @@
 
 #include <ql/methods/finitedifferences/stepcondition.hpp>
 #include <ql/shared_ptr.hpp>
-#include <ql/functional.hpp>
+#include <ql/methods/finitedifferences/utilities/fdminnervaluecalculator.hpp>
+#include <functional>
 #include <vector>
 
 namespace QuantLib {
@@ -35,16 +36,16 @@ namespace QuantLib {
     class FdmInnerValueCalculator;
 
     struct FdmVPPStepConditionParams {
-        const Real heatRate;
-        const Real pMin; const Real pMax;
-        const Size tMinUp; const Size tMinDown;
-        const Real startUpFuel; const Real startUpFixCost;
-        const Real fuelCostAddon;
+        Real heatRate;
+        Real pMin; Real pMax;
+        Size tMinUp; Size tMinDown;
+        Real startUpFuel; Real startUpFixCost;
+        Real fuelCostAddon;
     };
 
     struct FdmVPPStepConditionMesher {
-        const Size stateDirection;
-        const ext::shared_ptr<FdmMesher> mesher;
+        Size stateDirection;
+        ext::shared_ptr<FdmMesher> mesher;
     };
 
     class FdmVPPStepCondition : public StepCondition<Array> {
@@ -80,7 +81,7 @@ namespace QuantLib {
         const ext::shared_ptr<FdmInnerValueCalculator> gasPrice_;
         const ext::shared_ptr<FdmInnerValueCalculator> sparkSpreadPrice_;
 
-        std::vector<ext::function<Real (Real)> > stateEvolveFcts_;
+        std::vector<std::function<Real (Real)> > stateEvolveFcts_;
     };
 }
 

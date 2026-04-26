@@ -13,7 +13,7 @@
  under the terms of the QuantLib license.  You should have received a
  copy of the license along with this program; if not, please email
  <quantlib-dev@lists.sf.net>. The license is also available online at
- <http://quantlib.org/license.shtml>.
+ <https://www.quantlib.org/license.shtml>.
 
  This program is distributed in the hope that it will be useful, but WITHOUT
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
@@ -23,8 +23,8 @@
 #include <ql/errors.hpp>
 #include <ql/exercise.hpp>
 #include <ql/experimental/barrieroption/perturbativebarrieroptionengine.hpp>
-#include <ql/functional.hpp>
 #include <ql/types.hpp>
+#include <functional>
 #include <algorithm>
 #include <cmath>
 #include <utility>
@@ -83,11 +83,11 @@ namespace QuantLib {
                     Real taumax,
                     int iord,
                     int igm,
-                    const ext::function<Real(Real, Real)>& integr,
-                    const ext::function<Real(Real, Real)>& integalpha,
-                    const ext::function<Real(Real, Real)>& integs,
-                    const ext::function<Real(Real)>& alpha,
-                    const ext::function<Real(Real)>& sigmaq) {
+                    const std::function<Real(Real, Real)>& integr,
+                    const std::function<Real(Real, Real)>& integalpha,
+                    const std::function<Real(Real, Real)>& integs,
+                    const std::function<Real(Real)>& alpha,
+                    const std::function<Real(Real)>& sigmaq) {
         Real v0=0.0, v1=0.0, v1p=0.0, v2p=0.0, v2pp=0.0, gm=0.0;
         int i=0,j=0;
         Real tmp=0.0, e1=0.0, e2=0.0, e3=0.0, e4=0.0;

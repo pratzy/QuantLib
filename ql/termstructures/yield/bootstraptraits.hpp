@@ -13,7 +13,7 @@
  under the terms of the QuantLib license.  You should have received a
  copy of the license along with this program; if not, please email
  <quantlib-dev@lists.sf.net>. The license is also available online at
- <http://quantlib.org/license.shtml>.
+ <https://www.quantlib.org/license.shtml>.
 
  This program is distributed in the hope that it will be useful, but WITHOUT
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
@@ -101,6 +101,18 @@ namespace QuantLib {
             return c->data()[i-1] * std::exp(detail::maxRate * dt);
         }
 
+        // transformation to add constraints to an unconstrained optimization
+        template <class C>
+        static Real transformDirect(Real x, Size i, const C* c)
+        {
+            return std::exp(x);
+        }
+        template <class C>
+        static Real transformInverse(Real x, Size i, const C* c)
+        {
+            return std::log(x);
+        }
+
         // root-finding update
         static void updateGuess(std::vector<Real>& data,
                                 Real discount,
@@ -178,6 +190,18 @@ namespace QuantLib {
             // no constraints.
             // We choose as max a value very unlikely to be exceeded.
             return detail::maxRate;
+        }
+
+        // transformation to add constraints to an unconstrained optimization
+        template <class C>
+        static Real transformDirect(Real x, Size i, const C* c)
+        {
+            return x;
+        }
+        template <class C>
+        static Real transformInverse(Real x, Size i, const C* c)
+        {
+            return x;
         }
 
         // root-finding update
@@ -261,6 +285,18 @@ namespace QuantLib {
             return detail::maxRate;
         }
 
+        // transformation to add constraints to an unconstrained optimization
+        template <class C>
+        static Real transformDirect(Real x, Size i, const C* c)
+        {
+            return x;
+        }
+        template <class C>
+        static Real transformInverse(Real x, Size i, const C* c)
+        {
+            return x;
+        }
+
         // root-finding update
         static void updateGuess(std::vector<Real>& data,
                                 Real forward,
@@ -327,8 +363,7 @@ namespace QuantLib {
                 // We choose as min a value very unlikely to be exceeded.
                 result = -detail::maxRate;
             }
-            Real t = c->timeFromReference(c->dates()[i]);
-            return std::max(result, -1.0 / t + 1E-8);
+            return std::max(result, -1.0 / c->times()[i] + 1E-8);
         }
         template <class C>
         static Real maxValueAfter(Size,
@@ -343,6 +378,18 @@ namespace QuantLib {
             // no constraints.
             // We choose as max a value very unlikely to be exceeded.
             return detail::maxRate;
+        }
+
+        // transformation to add constraints to an unconstrained optimization
+        template <class C>
+        static Real transformDirect(Real x, Size i, const C* c)
+        {
+            return std::exp(x) + (-1.0 / c->times()[i] + 1E-8);
+        }
+        template <class C>
+        static Real transformInverse(Real x, Size i, const C* c)
+        {
+            return std::log(x - (-1.0 / c->times()[i] + 1E-8));
         }
 
         // root-finding update

@@ -12,7 +12,7 @@
  under the terms of the QuantLib license.  You should have received a
  copy of the license along with this program; if not, please email
  <quantlib-dev@lists.sf.net>. The license is also available online at
- <http://quantlib.org/license.shtml>.
+ <https://www.quantlib.org/license.shtml>.
 
  This program is distributed in the hope that it will be useful, but WITHOUT
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
@@ -61,13 +61,10 @@ namespace QuantLib {
     //! Quoted year-on-year EU HICP (i.e. not a ratio of EU HICP)
     class YYEUHICP : public YoYInflationIndex {
       public:
-        explicit YYEUHICP(
-            bool interpolated,
-            const Handle<YoYInflationTermStructure>& ts = {})
+        explicit YYEUHICP(const Handle<YoYInflationTermStructure>& ts = {})
         : YoYInflationIndex("YY_HICP",
                             EURegion(),
                             false,
-                            interpolated,
                             Monthly,
                             Period(1, Months),
                             EURCurrency(),
@@ -77,43 +74,16 @@ namespace QuantLib {
     //! Quoted year-on-year EU HICPXT
     class YYEUHICPXT : public YoYInflationIndex {
       public:
-        explicit YYEUHICPXT(
-            bool interpolated,
-            const Handle<YoYInflationTermStructure>& ts = {})
+        explicit YYEUHICPXT(const Handle<YoYInflationTermStructure>& ts = {})
         : YoYInflationIndex("YY_HICPXT",
                             EURegion(),
                             false,
-                            interpolated,
                             Monthly,
                             Period(1, Months),
                             EURCurrency(),
                             ts) {}
     };
 
-
-    QL_DEPRECATED_DISABLE_WARNING
-
-    //! Year-on-year EU HICP (i.e. a ratio of EU HICP)
-    /*! \deprecated Pass the EUHICP index to YoYInflationIndex instead.
-                    Deprecated in version 1.31.
-    */
-    class [[deprecated("Pass the EUHICP index to YoYInflationIndex instead")]] YYEUHICPr : public YoYInflationIndex {
-      public:
-        explicit YYEUHICPr(
-            bool interpolated,
-            const Handle<YoYInflationTermStructure>& ts = {})
-        : YoYInflationIndex("YYR_HICP",
-                            EURegion(),
-                            false,
-                            interpolated,
-                            true,
-                            Monthly,
-                            Period(1, Months),
-                            EURCurrency(),
-                            ts) {}
-    };
-
-    QL_DEPRECATED_ENABLE_WARNING
 }
 
 

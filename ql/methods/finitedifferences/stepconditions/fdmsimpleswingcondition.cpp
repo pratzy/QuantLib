@@ -10,7 +10,7 @@
  under the terms of the QuantLib license.  You should have received a
  copy of the license along with this program; if not, please email
  <quantlib-dev@lists.sf.net>. The license is also available online at
- <http://quantlib.org/license.shtml>.
+ <https://www.quantlib.org/license.shtml>.
 
  This program is distributed in the hope that it will be useful, but WITHOUT
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
@@ -35,7 +35,7 @@ namespace QuantLib {
 
     void FdmSimpleSwingCondition::applyTo(Array& a, Time t) const {
 
-        const std::vector<Time>::const_iterator iter
+        const auto iter
             = std::find(exerciseTimes_.begin(), exerciseTimes_.end(), t);
         const Size maxExerciseValue=mesher_->layout()->dim()[swingDirection_]-1;
 

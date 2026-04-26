@@ -10,7 +10,7 @@
  under the terms of the QuantLib license.  You should have received a
  copy of the license along with this program; if not, please email
  <quantlib-dev@lists.sf.net>. The license is also available online at
- <http://quantlib.org/license.shtml>.
+ <https://www.quantlib.org/license.shtml>.
 
  This program is distributed in the hope that it will be useful, but WITHOUT
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
@@ -20,14 +20,8 @@
 #include <ql/utilities/tracing.hpp>
 #include <iostream>
 
-namespace QuantLib {
-
-    // defined here in order not to include the full <iostream> in the header
-
-    namespace detail {
+namespace QuantLib::detail {
 
         Tracing::Tracing() : out_(&std::cerr) {}
     }
-
-}
 

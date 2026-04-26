@@ -12,7 +12,7 @@
  under the terms of the QuantLib license.  You should have received a
  copy of the license along with this program; if not, please email
  <quantlib-dev@lists.sf.net>. The license is also available online at
- <http://quantlib.org/license.shtml>.
+ <https://www.quantlib.org/license.shtml>.
 
  This program is distributed in the hope that it will be useful, but WITHOUT
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
@@ -347,7 +347,7 @@ namespace QuantLib {
 
     /*! Return the CDS maturity date given the CDS trade date, \p tradeDate, the CDS \p tenor and a CDS \p rule.
 
-        A \c Null<Date>() is returned when a \p rule of \c CDS2015 and a \p tenor length of zero fail to yield a valid
+        A null date is returned when a \p rule of \c CDS2015 and a \p tenor length of zero fail to yield a valid
         CDS maturity date.
 
         \warning An exception will be thrown if the \p rule is not \c CDS2015, \c CDS or \c OldCDS.

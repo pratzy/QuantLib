@@ -11,7 +11,7 @@
  under the terms of the QuantLib license.  You should have received a
  copy of the license along with this program; if not, please email
  <quantlib-dev@lists.sf.net>. The license is also available online at
- <http://quantlib.org/license.shtml>.
+ <https://www.quantlib.org/license.shtml>.
 
  This program is distributed in the hope that it will be useful, but WITHOUT
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
@@ -58,46 +58,18 @@ namespace QuantLib {
       public:
         YYGenericCPI(Frequency frequency,
                      bool revised,
-                     bool interpolated,
                      const Period &lag,
                      const Currency &ccy,
                      const Handle<YoYInflationTermStructure>& ts = {})
         : YoYInflationIndex("YY_CPI",
                             GenericRegion(),
                             revised,
-                            interpolated,
                             frequency,
                             lag,
                             ccy,
                             ts) {}
     };
 
-    QL_DEPRECATED_DISABLE_WARNING
-
-    //! Year-on-year GenericCPI (i.e. a ratio)
-    /*! \deprecated Pass a zero-inflation index to YoYInflationIndex instead.
-                    Deprecated in version 1.31.
-    */
-    class [[deprecated("Pass a zero-inflation index to YoYInflationIndex instead")]] YYGenericCPIr : public YoYInflationIndex {
-      public:
-        YYGenericCPIr(Frequency frequency,
-                      bool revised,
-                      bool interpolated,
-                      const Period &lag,
-                      const Currency &ccy,
-                      const Handle<YoYInflationTermStructure>& ts = {})
-        : YoYInflationIndex("YYR_CPI",
-                            GenericRegion(),
-                            revised,
-                            interpolated,
-                            true,
-                            frequency,
-                            lag,
-                            ccy,
-                            ts) {}
-    };
-
-    QL_DEPRECATED_ENABLE_WARNING
 }
 
 #endif

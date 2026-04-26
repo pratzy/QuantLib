@@ -12,7 +12,7 @@
  under the terms of the QuantLib license.  You should have received a
  copy of the license along with this program; if not, please email
  <quantlib-dev@lists.sf.net>. The license is also available online at
- <http://quantlib.org/license.shtml>.
+ <https://www.quantlib.org/license.shtml>.
 
  This program is distributed in the hope that it will be useful, but WITHOUT
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
@@ -51,11 +51,11 @@ namespace QuantLib {
 
             Real alfa, beta, gamma;
             if (strike != 0.0) {
-                BivariateCumulativeNormalDistribution bivCNorm =
+                auto bivCNorm =
                     BivariateCumulativeNormalDistribution(rho);
-                BivariateCumulativeNormalDistribution bivCNormMod2 =
+                auto bivCNormMod2 =
                     BivariateCumulativeNormalDistribution(modRho2);
-                BivariateCumulativeNormalDistribution bivCNormMod1 =
+                auto bivCNormMod1 =
                     BivariateCumulativeNormalDistribution(modRho1);
 
                 Real D1_1 =

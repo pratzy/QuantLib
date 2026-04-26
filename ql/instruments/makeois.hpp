@@ -12,7 +12,7 @@
  under the terms of the QuantLib license.  You should have received a
  copy of the license along with this program; if not, please email
  <quantlib-dev@lists.sf.net>. The license is also available online at
- <http://quantlib.org/license.shtml>.
+ <https://www.quantlib.org/license.shtml>.
 
  This program is distributed in the hope that it will be useful, but WITHOUT
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
@@ -76,6 +76,7 @@ namespace QuantLib {
         MakeOIS& withEndOfMonth(bool flag = true);
         MakeOIS& withFixedLegEndOfMonth(bool flag = true);
         MakeOIS& withOvernightLegEndOfMonth(bool flag = true);
+        MakeOIS& withMaturityEndOfMonth(bool flag = true);
 
         MakeOIS& withFixedLegDayCount(const DayCounter& dc);
 
@@ -88,6 +89,10 @@ namespace QuantLib {
 
         MakeOIS& withAveragingMethod(RateAveraging::Type averagingMethod);
 
+        MakeOIS& withLookbackDays(Natural lookbackDays);
+        MakeOIS& withLockoutDays(Natural lockoutDays);
+        MakeOIS& withObservationShift(bool applyObservationShift = true);
+
         MakeOIS& withPricingEngine(
                               const ext::shared_ptr<PricingEngine>& engine);
       private:
@@ -96,7 +101,7 @@ namespace QuantLib {
         Rate fixedRate_;
         Period forwardStart_;
 
-        Natural settlementDays_ = 2;
+        Natural settlementDays_ = Null<Natural>();
         Date effectiveDate_, terminationDate_;
         Calendar fixedCalendar_, overnightCalendar_;
 
@@ -113,6 +118,7 @@ namespace QuantLib {
         DateGeneration::Rule fixedRule_ = DateGeneration::Backward;
         DateGeneration::Rule overnightRule_ = DateGeneration::Backward;
         bool fixedEndOfMonth_ = false, overnightEndOfMonth_ = false, isDefaultEOM_ = true;
+        ext::optional<bool> maturityEndOfMonth_;
 
         Swap::Type type_ = Swap::Payer;
         Real nominal_ = 1.0;
@@ -124,6 +130,9 @@ namespace QuantLib {
 
         bool telescopicValueDates_ = false;
         RateAveraging::Type averagingMethod_ = RateAveraging::Compound;
+        Natural lookbackDays_ = Null<Natural>();
+        Natural lockoutDays_ = 0;
+        bool applyObservationShift_ = false;
     };
 
 }

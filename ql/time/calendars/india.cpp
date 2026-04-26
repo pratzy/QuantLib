@@ -11,7 +11,7 @@
  under the terms of the QuantLib license.  You should have received a
  copy of the license along with this program; if not, please email
  <quantlib-dev@lists.sf.net>. The license is also available online at
- <http://quantlib.org/license.shtml>.
+ <https://www.quantlib.org/license.shtml>.
 
  This program is distributed in the hope that it will be useful, but WITHOUT
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
@@ -442,15 +442,19 @@ namespace QuantLib {
                 || (d == 9 && m == April)
                 // Id-Ul-Fitr (Ramadan Eid)
                 || (d == 11 && m == April)
-                // Ram Navamiz
+                // Ram Navami
                 || (d == 17 && m == April)
                 // Mahavir Jayanti
                 || (d == 21 && m == April)
+                // General Parliamentary Elections
+                || (d == 20 && m == May)
                 // Buddha Pournima
                 || (d == 23 && m == May)
-                // Bakri Id (estimated Sunday 16th or Monday 17th)
+                // Bakri Eid
                 || (d == 17 && m == June)
-                // Id-E-Milad (estimated Sunday 15th or Monday 16th)
+                // Moharram
+                || (d == 17 && m == July)
+                // Eid-E-Milad (estimated Sunday 15th or Monday 16th)
                 || (d == 16 && m == September)
                 // Diwali-Laxmi Pujan
                 || (d == 1 && m == November)

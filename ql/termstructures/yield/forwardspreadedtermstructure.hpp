@@ -11,7 +11,7 @@
  under the terms of the QuantLib license.  You should have received a
  copy of the license along with this program; if not, please email
  <quantlib-dev@lists.sf.net>. The license is also available online at
- <http://quantlib.org/license.shtml>.
+ <https://www.quantlib.org/license.shtml>.
 
  This program is distributed in the hope that it will be useful, but WITHOUT
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
@@ -26,7 +26,7 @@
 #define quantlib_forward_spreaded_term_structure_hpp
 
 #include <ql/quote.hpp>
-#include <ql/termstructures/yield/forwardstructure.hpp>
+#include <ql/termstructures/yield/zeroyieldstructure.hpp>
 #include <utility>
 
 namespace QuantLib {
@@ -44,7 +44,7 @@ namespace QuantLib {
         - observability against changes in the underlying term
           structure and in the added spread is checked.
     */
-    class ForwardSpreadedTermStructure : public ForwardRateStructure {
+    class ForwardSpreadedTermStructure : public ZeroYieldStructure {
       public:
         ForwardSpreadedTermStructure(Handle<YieldTermStructure>, Handle<Quote> spread);
         //! \name TermStructure interface
@@ -61,10 +61,8 @@ namespace QuantLib {
         void update() override;
         //@}
       protected:
-        //! \name ForwardRateStructure implementation
+        //! \name ZeroYieldStructure implementation
         //@{
-        Rate forwardImpl(Time t) const override;
-        /* This method must disappear should the spread become a curve */
         Rate zeroYieldImpl(Time t) const override;
         //@}
       private:
@@ -75,6 +73,8 @@ namespace QuantLib {
     inline ForwardSpreadedTermStructure::ForwardSpreadedTermStructure(Handle<YieldTermStructure> h,
                                                                       Handle<Quote> spread)
     : originalCurve_(std::move(h)), spread_(std::move(spread)) {
+        if (!originalCurve_.empty())
+            enableExtrapolation(originalCurve_->allowsExtrapolation());
         registerWith(originalCurve_);
         registerWith(spread_);
     }
@@ -106,6 +106,7 @@ namespace QuantLib {
     inline void ForwardSpreadedTermStructure::update() {
         if (!originalCurve_.empty()) {
             YieldTermStructure::update();
+            enableExtrapolation(originalCurve_->allowsExtrapolation());
         } else {
             /* The implementation inherited from YieldTermStructure
                asks for our reference date, which we don't have since
@@ -114,11 +115,6 @@ namespace QuantLib {
             // NOLINTNEXTLINE(bugprone-parent-virtual-call)
             TermStructure::update();
         }
-    }
-
-    inline Rate ForwardSpreadedTermStructure::forwardImpl(Time t) const {
-        return originalCurve_->forwardRate(t, t, Continuous, NoFrequency, true)
-            + spread_->value();
     }
 
     inline Rate ForwardSpreadedTermStructure::zeroYieldImpl(Time t) const {

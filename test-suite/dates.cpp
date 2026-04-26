@@ -16,7 +16,7 @@
  under the terms of the QuantLib license.  You should have received a
  copy of the license along with this program; if not, please email
  <quantlib-dev@lists.sf.net>. The license is also available online at
- <http://quantlib.org/license.shtml>.
+ <https://www.quantlib.org/license.shtml>.
 
  This program is distributed in the hope that it will be useful, but WITHOUT
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
@@ -542,6 +542,17 @@ BOOST_AUTO_TEST_CASE(canHash) {
     if (set.count(start_date) == 0) {
         BOOST_FAIL("Expected to find date " << start_date << " in unordered_set\n");
     }
+}
+
+BOOST_AUTO_TEST_CASE(nullDate) {
+    BOOST_TEST_MESSAGE("Testing null date for working serial number and hash...");
+
+    Date null_date = Date();
+
+    std::hash<Date> hasher;
+
+    BOOST_CHECK_NO_THROW(null_date.serialNumber());
+    BOOST_CHECK_NO_THROW(hasher(null_date));
 }
 
 BOOST_AUTO_TEST_SUITE_END()

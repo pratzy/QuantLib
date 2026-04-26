@@ -10,7 +10,7 @@ QuantLib is free software: you can redistribute it and/or modify it
 under the terms of the QuantLib license.  You should have received a
 copy of the license along with this program; if not, please email
 <quantlib-dev@lists.sf.net>. The license is also available online at
-<http://quantlib.org/license.shtml>.
+<https://www.quantlib.org/license.shtml>.
 
 This program is distributed in the hope that it will be useful, but WITHOUT
 ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
@@ -101,13 +101,13 @@ namespace QuantLib {
         std::complex<Real> i1(0, 1);
         Real alpha = 1.25;
 
-        for (PayoffMap::const_iterator payIt = payoffMap.begin(); payIt != payoffMap.end(); ++payIt)
+        for (auto & payIt : payoffMap)
         {
-            Date expiryDate = payIt->first;
+            Date expiryDate = payIt.first;
 
             // Calculate n large enough for maximum strike, and round up to a power of 2
             Real maxStrike = 0.0;
-            for (const auto& payoff : payIt->second) {
+            for (const auto& payoff : payIt.second) {
                 if (payoff->strike() > maxStrike)
                     maxStrike = payoff->strike();
             }
@@ -159,7 +159,7 @@ namespace QuantLib {
                 strikes[i] = std::exp(k_u);
             }
 
-            for (const auto& payoff : payIt->second) {
+            for (const auto& payoff : payIt.second) {
                 Real callPrice = LinearInterpolation(strikes.begin(), strikes.end(),
                                                      prices.begin())(payoff->strike());
                 switch (payoff->optionType())

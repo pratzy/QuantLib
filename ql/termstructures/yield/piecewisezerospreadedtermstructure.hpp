@@ -12,7 +12,7 @@
  under the terms of the QuantLib license.  You should have received a
  copy of the license along with this program; if not, please email
  <quantlib-dev@lists.sf.net>. The license is also available online at
- <http://quantlib.org/license.shtml>.
+ <https://www.quantlib.org/license.shtml>.
 
  This program is distributed in the hope that it will be useful, but WITHOUT
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
@@ -49,12 +49,23 @@ namespace QuantLib {
   class InterpolatedPiecewiseZeroSpreadedTermStructure : public ZeroYieldStructure {
     public:
       InterpolatedPiecewiseZeroSpreadedTermStructure(Handle<YieldTermStructure>,
-                                                     std::vector<Handle<Quote> > spreads,
-                                                     const std::vector<Date>& dates,
+                                                     std::vector<Handle<Quote>> spreads,
+                                                     std::vector<Date> dates,
                                                      Compounding comp = Continuous,
                                                      Frequency freq = NoFrequency,
-                                                     DayCounter dc = DayCounter(),
-                                                     const Interpolator& factory = Interpolator());
+                                                     Interpolator factory = Interpolator());
+
+      /*! \deprecated Use the constructor without a day counter.
+                      Deprecated in version 1.41.
+      */
+      [[deprecated("Use the constructor without DayCounter")]]
+      InterpolatedPiecewiseZeroSpreadedTermStructure(Handle<YieldTermStructure>,
+                                                     std::vector<Handle<Quote>> spreads,
+                                                     std::vector<Date> dates,
+                                                     Compounding comp,
+                                                     Frequency freq,
+                                                     const DayCounter& dc,
+                                                     Interpolator factory = Interpolator());
       //! \name YieldTermStructure interface
       //@{
       DayCounter dayCounter() const override;
@@ -78,7 +89,6 @@ namespace QuantLib {
       std::vector<Spread> spreadValues_;
       Compounding comp_;
       Frequency freq_;
-      DayCounter dc_;
       Interpolator factory_;
       Interpolation interpolator_;
   };
@@ -91,27 +101,45 @@ namespace QuantLib {
 
     // inline definitions
 
+    #ifndef __DOXYGEN__
+
     template <class T>
     inline InterpolatedPiecewiseZeroSpreadedTermStructure<
         T>::InterpolatedPiecewiseZeroSpreadedTermStructure(Handle<YieldTermStructure> h,
-                                                           std::vector<Handle<Quote> > spreads,
-                                                           const std::vector<Date>& dates,
+                                                           std::vector<Handle<Quote>> spreads,
+                                                           std::vector<Date> dates,
                                                            Compounding comp,
                                                            Frequency freq,
-                                                           DayCounter dc,
-                                                           const T& factory)
-    : originalCurve_(std::move(h)), spreads_(std::move(spreads)), dates_(dates),
-      times_(dates.size()), spreadValues_(dates.size()), comp_(comp), freq_(freq),
-      dc_(std::move(dc)), factory_(factory) {
+                                                           T factory)
+    : originalCurve_(std::move(h)), spreads_(std::move(spreads)), dates_(std::move(dates)),
+      times_(dates_.size()), spreadValues_(dates_.size()), comp_(comp), freq_(freq),
+      factory_(std::move(factory)) {
         QL_REQUIRE(!spreads_.empty(), "no spreads given");
         QL_REQUIRE(spreads_.size() == dates_.size(),
                    "spread and date vector have different sizes");
         registerWith(originalCurve_);
         for (auto& spread : spreads_)
             registerWith(spread);
+        interpolator_ = detail::interpolateWithoutUpdate(
+            factory_, times_.begin(), times_.end(), spreadValues_.begin());
         if (!originalCurve_.empty())
             updateInterpolation();
     }
+
+    template <class T>
+    inline InterpolatedPiecewiseZeroSpreadedTermStructure<
+        T>::InterpolatedPiecewiseZeroSpreadedTermStructure(Handle<YieldTermStructure> h,
+                                                           std::vector<Handle<Quote>> spreads,
+                                                           std::vector<Date> dates,
+                                                           Compounding comp,
+                                                           Frequency freq,
+                                                           const DayCounter& dc,
+                                                           T factory)
+    : InterpolatedPiecewiseZeroSpreadedTermStructure(
+        std::move(h), std::move(spreads), std::move(dates), comp, freq, std::move(factory)
+    ) {}
+
+    #endif
 
     template <class T>
     inline DayCounter InterpolatedPiecewiseZeroSpreadedTermStructure<T>::dayCounter() const {
@@ -155,9 +183,9 @@ namespace QuantLib {
     inline Spread
     InterpolatedPiecewiseZeroSpreadedTermStructure<T>::calcSpread(Time t) const {
         if (t <= times_.front()) {
-            return spreads_.front()->value();
+            return spreadValues_.front();
         } else if (t >= times_.back()) {
-            return spreads_.back()->value();
+            return spreadValues_.back();
         } else {
             return interpolator_(t, true);
         }
@@ -184,13 +212,10 @@ namespace QuantLib {
             times_[i] = timeFromReference(dates_[i]);
             spreadValues_[i] = spreads_[i]->value();
         }
-        interpolator_ = factory_.interpolate(times_.begin(),
-                                             times_.end(),
-                                             spreadValues_.begin());
+        interpolator_.update();
     }
 
 }
 
 
 #endif
-

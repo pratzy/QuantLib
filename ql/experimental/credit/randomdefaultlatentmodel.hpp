@@ -11,7 +11,7 @@
  under the terms of the QuantLib license.  You should have received a
  copy of the license along with this program; if not, please email
  <quantlib-dev@lists.sf.net>. The license is also available online at
- <http://quantlib.org/license.shtml>.
+ <https://www.quantlib.org/license.shtml>.
 
  This program is distributed in the hope that it will be useful, but WITHOUT
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
@@ -33,7 +33,7 @@
 #include <ql/math/solvers1d/brent.hpp>
 #include <ql/math/statistics/histogram.hpp>
 #include <ql/math/statistics/riskstatistics.hpp>
-#include <ql/tuple.hpp>
+#include <tuple>
 #include <utility>
 
 /* Intended to replace
@@ -181,7 +181,7 @@ namespace QuantLib {
         Real percentile(const Date& d, Real percentile) const override;
         /*! Returns the VaR value for a given percentile and the 95 confidence
         interval of that value. */
-        virtual ext::tuple<Real, Real, Real> percentileAndInterval(
+        virtual std::tuple<Real, Real, Real> percentileAndInterval(
             const Date& d, Real percentile) const;
         /*! Distributes the total VaR amount along the portfolio counterparties.
             The passed loss amount is in loss units.
@@ -277,7 +277,7 @@ namespace QuantLib {
                         events[iEvt].nameIdx));
             }
             if(namesDefaulting.size() >= n) {
-                std::map<unsigned short, unsigned short>::const_iterator
+                auto
                     itdefs = namesDefaulting.begin();
                 // locate nth default in time:
                 std::advance(itdefs, n-1);
@@ -524,7 +524,7 @@ namespace QuantLib {
     template<template <class, class> class D, class C, class URNG>
     Real RandomLM<D, C, URNG>::percentile(const Date& d, Real perc) const {
         // need to specify return type in tuples' get is parametric
-        return ext::get<0>(percentileAndInterval(d, perc));
+        return std::get<0>(percentileAndInterval(d, perc));
     }
 
 
@@ -535,7 +535,7 @@ namespace QuantLib {
     of the stimator just computed. See the reference for a discussion.
     */
     template<template <class, class> class D, class C, class URNG>
-    ext::tuple<Real, Real, Real> RandomLM<D, C, URNG>::percentileAndInterval(const Date& d,
+    std::tuple<Real, Real, Real> RandomLM<D, C, URNG>::percentileAndInterval(const Date& d,
                                                                              Real percentile) const {
 
         QL_REQUIRE(percentile >= 0. && percentile <= 1.,
@@ -613,7 +613,7 @@ namespace QuantLib {
         lowerPercentile = rankLosses[r];
         upperPercentile = rankLosses[s];
 
-        return ext::make_tuple(quantileValue, lowerPercentile, upperPercentile);
+        return std::make_tuple(quantileValue, lowerPercentile, upperPercentile);
     }
 
 
@@ -849,7 +849,7 @@ namespace QuantLib {
         // grant access to static polymorphism:
         /* While this works on g++, VC9 refuses to compile it.
         Not completely sure whos right; individually making friends of the
-        calling members or writting explicitly the derived class T parameters
+        calling members or writing explicitly the derived class T parameters
         throws the same errors.
         The access is then open to the member fucntions.
         Another solution is to use this http://accu.org/index.php/journals/296

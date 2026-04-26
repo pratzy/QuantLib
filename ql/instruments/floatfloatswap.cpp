@@ -10,7 +10,7 @@
  under the terms of the QuantLib license.  You should have received a
  copy of the license along with this program; if not, please email
  <quantlib-dev@lists.sf.net>. The license is also available online at
- <http://quantlib.org/license.shtml>.
+ <https://www.quantlib.org/license.shtml>.
 
  This program is distributed in the hope that it will be useful, but WITHOUT
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
@@ -368,10 +368,10 @@ namespace QuantLib {
             nominal2_.push_back(nominal2_.back());
         }
 
-        for (Leg::const_iterator i = legs_[0].begin(); i < legs_[0].end(); ++i)
+        for (auto i = legs_[0].begin(); i < legs_[0].end(); ++i)
             registerWith(*i);
 
-        for (Leg::const_iterator i = legs_[1].begin(); i < legs_[1].end(); ++i)
+        for (auto i = legs_[1].begin(); i < legs_[1].end(); ++i)
             registerWith(*i);
 
         switch (type_) {
@@ -457,7 +457,7 @@ namespace QuantLib {
             } else {
                 ext::shared_ptr<CashFlow> cashflow =
                     ext::dynamic_pointer_cast<CashFlow>(leg1Coupons[i]);
-                std::vector<Date>::const_iterator j =
+                auto j =
                     std::find(arguments->leg1PayDates.begin(),
                               arguments->leg1PayDates.end(), cashflow->date());
                 QL_REQUIRE(j != arguments->leg1PayDates.end(),
@@ -503,7 +503,7 @@ namespace QuantLib {
             } else {
                 ext::shared_ptr<CashFlow> cashflow =
                     ext::dynamic_pointer_cast<CashFlow>(leg2Coupons[i]);
-                std::vector<Date>::const_iterator j =
+                auto j =
                     std::find(arguments->leg2PayDates.begin(),
                               arguments->leg2PayDates.end(), cashflow->date());
                 QL_REQUIRE(j != arguments->leg2PayDates.end(),
@@ -524,10 +524,50 @@ namespace QuantLib {
         }
     }
 
-    void FloatFloatSwap::setupExpired() const { Swap::setupExpired(); }
+    Spread FloatFloatSwap::fairSpread1() const {
+        calculate();
+        QL_REQUIRE(fairSpread1_ != Null<Spread>(), "fair spread 1 not available");
+        return fairSpread1_;
+    }
+
+    Spread FloatFloatSwap::fairSpread2() const {
+        calculate();
+        QL_REQUIRE(fairSpread2_ != Null<Spread>(), "fair spread 2 not available");
+        return fairSpread2_;
+    }
+
+    void FloatFloatSwap::setupExpired() const {
+        Swap::setupExpired();
+        fairSpread1_ = Null<Spread>();
+        fairSpread2_ = Null<Spread>();
+    }
 
     void FloatFloatSwap::fetchResults(const PricingEngine::results *r) const {
+        static const Spread basisPoint = 1.0e-4;
+
         Swap::fetchResults(r);
+
+        const auto* results = dynamic_cast<const FloatFloatSwap::results*>(r);
+        if (results != nullptr) {
+            fairSpread1_ = results->fairSpread1;
+            fairSpread2_ = results->fairSpread2;
+        } else {
+            fairSpread1_ = Null<Spread>();
+            fairSpread2_ = Null<Spread>();
+        }
+
+        if (fairSpread1_ == Null<Spread>()) {
+            if (!legBPS_.empty() && legBPS_[0] != Null<Real>()) {
+                Real currentSpread = spread1_.empty() ? 0.0 : spread1_[0];
+                fairSpread1_ = currentSpread - NPV_/(legBPS_[0]/basisPoint);
+            }
+        }
+        if (fairSpread2_ == Null<Spread>()) {
+            if (legBPS_.size() > 1 && legBPS_[1] != Null<Real>()) {
+                Real currentSpread = spread2_.empty() ? 0.0 : spread2_[0];
+                fairSpread2_ = currentSpread - NPV_/(legBPS_[1]/basisPoint);
+            }
+        }
     }
 
     void FloatFloatSwap::arguments::validate() const {
@@ -580,5 +620,9 @@ namespace QuantLib {
         QL_REQUIRE(index2 != nullptr, "index2 is null");
     }
 
-    void FloatFloatSwap::results::reset() { Swap::results::reset(); }
+    void FloatFloatSwap::results::reset() {
+        Swap::results::reset();
+        fairSpread1 = Null<Spread>();
+        fairSpread2 = Null<Spread>();
+    }
 }

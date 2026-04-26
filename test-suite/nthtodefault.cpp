@@ -10,14 +10,13 @@
  under the terms of the QuantLib license.  You should have received a
  copy of the license along with this program; if not, please email
  <quantlib-dev@lists.sf.net>. The license is also available online at
- <http://quantlib.org/license.shtml>.
+ <https://www.quantlib.org/license.shtml>.
 
  This program is distributed in the hope that it will be useful, but WITHOUT
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
-#include "preconditions.hpp"
 #include "toplevelfixture.hpp"
 #include "utilities.hpp"
 #include <ql/currencies/europe.hpp>
@@ -96,7 +95,7 @@ hwDatumDist hwDataDist[] = {
 };
 
 
-BOOST_AUTO_TEST_CASE(testGauss, *precondition(if_speed(Slow))) {
+BOOST_AUTO_TEST_CASE(testGauss) {
     BOOST_TEST_MESSAGE("Testing nth-to-default against Hull-White values "
                        "with Gaussian copula...");
 
@@ -109,7 +108,7 @@ BOOST_AUTO_TEST_CASE(testGauss, *precondition(if_speed(Slow))) {
     Period timeUnit = 1*Weeks; // required to reach accuracy
 
     Size names = 10;
-    QL_REQUIRE (LENGTH(hwData) == names, "hwData length does not match");
+    QL_REQUIRE (std::size(hwData) == names, "hwData length does not match");
 
     Real rate = 0.05;
     DayCounter dc = Actual365Fixed();
@@ -152,14 +151,14 @@ BOOST_AUTO_TEST_CASE(testGauss, *precondition(if_speed(Slow))) {
     ext::shared_ptr<SimpleQuote> simpleQuote (new SimpleQuote(0.0));
     Handle<Quote> correlationHandle (simpleQuote);
 
-    ext::shared_ptr<DefaultLossModel> copula( new 
-        ConstantLossModel<GaussianCopulaPolicy>( correlationHandle, 
-        std::vector<Real>(names, recovery), 
-        LatentModelIntegrationType::GaussianQuadrature, names, 
+    ext::shared_ptr<DefaultLossModel> copula( new
+        ConstantLossModel<GaussianCopulaPolicy>( correlationHandle,
+        std::vector<Real>(names, recovery),
+        LatentModelIntegrationType::GaussianQuadrature, names,
         GaussianCopulaPolicy::initTraits()));
 
     /* If you like the action you can price with the simulation engine below
-    instead below. But you need at least 1e6 simulations to pass the pricing 
+    instead below. But you need at least 1e6 simulations to pass the pricing
     error tests
     */
     //ext::shared_ptr<GaussianDefProbLM> gLM(
@@ -170,19 +169,20 @@ BOOST_AUTO_TEST_CASE(testGauss, *precondition(if_speed(Slow))) {
     //Size numSimulations = 1000000;
     //// Size numCoresUsed = 4; use your are in the multithread branch
     //// Sobol, many cores
-    //ext::shared_ptr<RandomDefaultLM<GaussianCopulaPolicy> > copula( 
-    //    new RandomDefaultLM<GaussianCopulaPolicy>(gLM, 
-    //        std::vector<Real>(names, recovery), numSimulations, 1.e-6, 
+    //ext::shared_ptr<RandomDefaultLM<GaussianCopulaPolicy> > copula(
+    //    new RandomDefaultLM<GaussianCopulaPolicy>(gLM,
+    //        std::vector<Real>(names, recovery), numSimulations, 1.e-6,
     //        2863311530));
 
     // Set up pool and basket
     std::vector<std::string> namesIds;
+    namesIds.reserve(names);
     for(Size i=0; i<names; i++)
         namesIds.push_back(std::string("Name") + std::to_string(i));
 
     std::vector<Issuer> issuers;
     for(Size i=0; i<names; i++) {
-        std::vector<QuantLib::Issuer::key_curve_pair> curves(1, 
+        std::vector<QuantLib::Issuer::key_curve_pair> curves(1,
             std::make_pair(NorthAmericaCorpDefaultKey(
                 EURCurrency(), QuantLib::SeniorSec,
                 Period(), 1. // amount threshold
@@ -195,10 +195,10 @@ BOOST_AUTO_TEST_CASE(testGauss, *precondition(if_speed(Slow))) {
         thePool->add(namesIds[i], issuers[i], NorthAmericaCorpDefaultKey(
                 EURCurrency(), QuantLib::SeniorSec, Period(), 1.));
 
-    std::vector<DefaultProbKey> defaultKeys(probabilities.size(), 
+    std::vector<DefaultProbKey> defaultKeys(probabilities.size(),
         NorthAmericaCorpDefaultKey(EURCurrency(), SeniorSec, Period(), 1.));
 
-    ext::shared_ptr<Basket> basket(new Basket(asofDate, namesIds, 
+    ext::shared_ptr<Basket> basket(new Basket(asofDate, namesIds,
         std::vector<Real>(names, namesNotional/names), thePool, 0., 1.));
 
     ext::shared_ptr<PricingEngine> engine(
@@ -211,19 +211,17 @@ BOOST_AUTO_TEST_CASE(testGauss, *precondition(if_speed(Slow))) {
         ntd.back().setPricingEngine(engine);
     }
 
-    QL_REQUIRE (LENGTH(hwCorrelation) == 3,
+    static_assert(std::size(hwCorrelation) == 3,
                 "correlation length does not match");
 
     Real diff, maxDiff = 0;
 
     basket->setLossModel(copula);
-    
-    for (Size j = 0; j < LENGTH(hwCorrelation); j++) {
+
+    for (Size j = 0; j < std::size(hwCorrelation); j++) {
         simpleQuote->setValue (hwCorrelation[j]);
         for (Size i = 0; i < ntd.size(); i++) {
-            QL_REQUIRE (ntd[i].rank() == hwData[i].rank, "rank does not match");
-            QL_REQUIRE (LENGTH(hwCorrelation) == LENGTH(hwData[i].spread),
-                        "vector length does not match");
+            QL_REQUIRE(ntd[i].rank() == hwData[i].rank, "rank does not match");
             diff = 1e4 * ntd[i].fairPremium() - hwData[i].spread[j];
             maxDiff = std::max(maxDiff, fabs (diff));
             BOOST_CHECK_MESSAGE (fabs(diff/hwData[i].spread[j]) < relTolerance
@@ -233,7 +231,7 @@ BOOST_AUTO_TEST_CASE(testGauss, *precondition(if_speed(Slow))) {
         }
     }
 }
-BOOST_AUTO_TEST_CASE(testStudent, *precondition(if_speed(Slow))) {
+BOOST_AUTO_TEST_CASE(testStudent) {
 
     BOOST_TEST_MESSAGE("Testing nth-to-default against Hull-White values "
                        "with Student copula...");
@@ -247,7 +245,7 @@ BOOST_AUTO_TEST_CASE(testStudent, *precondition(if_speed(Slow))) {
     Period timeUnit = 1*Weeks; // required to reach accuracy
 
     Size names = 10;
-    QL_REQUIRE (LENGTH(hwDataDist) == names, "hwDataDist length does not match");
+    QL_REQUIRE (std::size(hwDataDist) == names, "hwDataDist length does not match");
 
     Real rate = 0.05;
     DayCounter dc = Actual365Fixed();
@@ -293,19 +291,20 @@ BOOST_AUTO_TEST_CASE(testStudent, *precondition(if_speed(Slow))) {
 
     TCopulaPolicy::initTraits iniT;
     iniT.tOrders = std::vector<QuantLib::Integer>(2,5);
-    ext::shared_ptr<DefaultLossModel> copula( new 
-        ConstantLossModel<TCopulaPolicy>( correlationHandle, 
-        std::vector<Real>(names, recovery), 
+    ext::shared_ptr<DefaultLossModel> copula( new
+        ConstantLossModel<TCopulaPolicy>( correlationHandle,
+        std::vector<Real>(names, recovery),
         LatentModelIntegrationType::GaussianQuadrature, names, iniT));
 
     // Set up pool and basket
     std::vector<std::string> namesIds;
+    namesIds.reserve(names);
     for(Size i=0; i<names; i++)
         namesIds.push_back(std::string("Name") + std::to_string(i));
 
     std::vector<Issuer> issuers;
     for(Size i=0; i<names; i++) {
-        std::vector<QuantLib::Issuer::key_curve_pair> curves(1, 
+        std::vector<QuantLib::Issuer::key_curve_pair> curves(1,
             std::make_pair(NorthAmericaCorpDefaultKey(
                 EURCurrency(), QuantLib::SeniorSec,
                 Period(), 1. // amount threshold
@@ -318,10 +317,10 @@ BOOST_AUTO_TEST_CASE(testStudent, *precondition(if_speed(Slow))) {
         thePool->add(namesIds[i], issuers[i], NorthAmericaCorpDefaultKey(
                 EURCurrency(), QuantLib::SeniorSec, Period(), 1.));
 
-    std::vector<DefaultProbKey> defaultKeys(probabilities.size(), 
+    std::vector<DefaultProbKey> defaultKeys(probabilities.size(),
         NorthAmericaCorpDefaultKey(EURCurrency(), SeniorSec, Period(), 1.));
 
-    ext::shared_ptr<Basket> basket(new Basket(asofDate, namesIds, 
+    ext::shared_ptr<Basket> basket(new Basket(asofDate, namesIds,
         std::vector<Real>(names, namesNotional/names), thePool, 0., 1.));
 
     ext::shared_ptr<PricingEngine> engine(
@@ -334,7 +333,7 @@ BOOST_AUTO_TEST_CASE(testStudent, *precondition(if_speed(Slow))) {
         ntd.back().setPricingEngine(engine);
     }
 
-    QL_REQUIRE (LENGTH(hwCorrelation) == 3,
+    static_assert(std::size(hwCorrelation) == 3,
                 "correlation length does not match");
 
     Real maxDiff = 0;
@@ -343,11 +342,11 @@ BOOST_AUTO_TEST_CASE(testStudent, *precondition(if_speed(Slow))) {
 
     // This is the necessary code, but a proper hwData for the t copula is needed.
     // Real diff;
-    // for (Size j = 0; j < LENGTH(hwCorrelation); j++) {
+    // for (Size j = 0; j < std::size(hwCorrelation); j++) {
     //     simpleQuote->setValue (hwCorrelation[j]);
     //     for (Size i = 0; i < ntd.size(); i++) {
     //         QL_REQUIRE (ntd[i].rank() == hwData[i].rank, "rank does not match");
-    //         QL_REQUIRE (LENGTH(hwCorrelation) == LENGTH(hwData[i].spread),
+    //         static_assert(std::size(hwCorrelation) == std::size(hwData[i].spread),
     //                     "vector length does not match");
     //         diff = 1e4 * ntd[i].fairPremium() - hwData[i].spread[j];
     //         maxDiff = std::max(maxDiff, fabs (diff));
@@ -360,7 +359,7 @@ BOOST_AUTO_TEST_CASE(testStudent, *precondition(if_speed(Slow))) {
 
     //instead of this BEGIN
     simpleQuote->setValue (0.3);
-    
+
     for (Size i = 0; i < ntd.size(); i++) {
         QL_REQUIRE (ntd[i].rank() == hwDataDist[i].rank, "rank does not match");
 

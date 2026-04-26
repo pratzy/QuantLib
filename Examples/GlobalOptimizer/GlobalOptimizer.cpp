@@ -10,7 +10,7 @@
  under the terms of the QuantLib license.  You should have received a
  copy of the license along with this program; if not, please email
  <quantlib-dev@lists.sf.net>. The license is also available online at
- <http://quantlib.org/license.shtml>.
+ <https://www.quantlib.org/license.shtml>.
 
  This program is distributed in the hope that it will be useful, but WITHOUT
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
@@ -24,10 +24,9 @@
 #include <ql/experimental/math/fireflyalgorithm.hpp>
 #include <ql/experimental/math/hybridsimulatedannealing.hpp>
 #include <ql/experimental/math/particleswarmoptimization.hpp>
-#include <ql/functional.hpp>
 #include <ql/math/optimization/differentialevolution.hpp>
 #include <ql/math/optimization/simulatedannealing.hpp>
-#include <ql/tuple.hpp>
+#include <functional>
 #include <iomanip>
 #include <iostream>
 #include <utility>
@@ -132,8 +131,8 @@ Real printFunction(Problem& p, const Array& x) {
 
 class TestFunction : public CostFunction {
 public:
-    typedef ext::function<Real(const Array&)> RealFunc;
-    typedef ext::function<Array(const Array&)> ArrayFunc;
+    typedef std::function<Real(const Array&)> RealFunc;
+    typedef std::function<Array(const Array&)> ArrayFunc;
     explicit TestFunction(RealFunc f, ArrayFunc fs = ArrayFunc())
     : f_(std::move(f)), fs_(std::move(fs)) {}
     explicit TestFunction(Real (*f)(const Array&), Array (*fs)(const Array&) = nullptr)

@@ -11,7 +11,7 @@
  under the terms of the QuantLib license.  You should have received a
  copy of the license along with this program; if not, please email
  <quantlib-dev@lists.sf.net>. The license is also available online at
- <http://quantlib.org/license.shtml>.
+ <https://www.quantlib.org/license.shtml>.
 
  This program is distributed in the hope that it will be useful, but WITHOUT
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
@@ -42,43 +42,16 @@ namespace QuantLib {
     //! Quoted year-on-year UK RPI (i.e. not a ratio of UK RPI)
     class YYUKRPI : public YoYInflationIndex {
       public:
-        explicit YYUKRPI(
-            bool interpolated,
-            const Handle<YoYInflationTermStructure>& ts = {})
+        explicit YYUKRPI(const Handle<YoYInflationTermStructure>& ts = {})
         : YoYInflationIndex("YY_RPI",
                             UKRegion(),
                             false,
-                            interpolated,
                             Monthly,
                             Period(1, Months),
                             GBPCurrency(),
                             ts) {}
     };
 
-
-    QL_DEPRECATED_DISABLE_WARNING
-
-    //! Year-on-year UK RPI (i.e. a ratio of UK RPI)
-    /*! \deprecated Pass the UKRPI index to YoYInflationIndex instead.
-                    Deprecated in version 1.31.
-    */
-    class [[deprecated("Pass the UKRPI index to YoYInflationIndex instead")]] YYUKRPIr : public YoYInflationIndex {
-      public:
-        explicit YYUKRPIr(
-            bool interpolated,
-            const Handle<YoYInflationTermStructure>& ts = {})
-        : YoYInflationIndex("YYR_RPI",
-                            UKRegion(),
-                            false,
-                            interpolated,
-                            true,
-                            Monthly,
-                            Period(1, Months),
-                            GBPCurrency(),
-                            ts) {}
-    };
-
-    QL_DEPRECATED_ENABLE_WARNING
 }
 
 

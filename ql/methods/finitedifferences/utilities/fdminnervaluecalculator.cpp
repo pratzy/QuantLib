@@ -12,7 +12,7 @@
  under the terms of the QuantLib license.  You should have received a
  copy of the license along with this program; if not, please email
  <quantlib-dev@lists.sf.net>. The license is also available online at
- <http://quantlib.org/license.shtml>.
+ <https://www.quantlib.org/license.shtml>.
 
  This program is distributed in the hope that it will be useful, but WITHOUT
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
@@ -38,20 +38,20 @@ namespace QuantLib {
         struct mapped_payoff {
             explicit mapped_payoff(
                 const Payoff& payoff,
-                const ext::function<Real(Real)>& gridMapping)
+                const std::function<Real(Real)>& gridMapping)
             : payoff(payoff), gridMapping_(gridMapping) {}
 
             Real operator()(Real x) const { return payoff(gridMapping_(x)); }
 
             const Payoff& payoff;
-            const ext::function<Real(Real)>& gridMapping_;
+            const std::function<Real(Real)>& gridMapping_;
         };
     }
 
     FdmCellAveragingInnerValue::FdmCellAveragingInnerValue(ext::shared_ptr<Payoff> payoff,
                                                            ext::shared_ptr<FdmMesher> mesher,
                                                            Size direction,
-                                                           ext::function<Real(Real)> gridMapping)
+                                                           std::function<Real(Real)> gridMapping)
     : payoff_(std::move(payoff)), mesher_(std::move(mesher)), direction_(direction),
       gridMapping_(std::move(gridMapping)) {}
 

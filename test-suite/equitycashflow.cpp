@@ -9,7 +9,7 @@
  under the terms of the QuantLib license.  You should have received a
  copy of the license along with this program; if not, please email
  <quantlib-dev@lists.sf.net>. The license is also available online at
- <http://quantlib.org/license.shtml>.
+ <https://www.quantlib.org/license.shtml>.
 
  This program is distributed in the hope that it will be useful, but WITHOUT
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
@@ -19,6 +19,7 @@
 #include "toplevelfixture.hpp"
 #include "utilities.hpp"
 #include <ql/cashflows/equitycashflow.hpp>
+#include <ql/currencies/europe.hpp>
 #include <ql/indexes/equityindex.hpp>
 #include <ql/time/calendars/target.hpp>
 #include <ql/quotes/simplequote.hpp>
@@ -60,7 +61,7 @@ struct CommonVars {
         today = calendar.adjust(Date(27, January, 2023));
         Settings::instance().evaluationDate() = today;
 
-        equityIndex = ext::make_shared<EquityIndex>("eqIndex", calendar, localCcyInterestHandle,
+        equityIndex = ext::make_shared<EquityIndex>("eqIndex", calendar, EURCurrency(), localCcyInterestHandle,
                                                     dividendHandle, spotHandle);
         equityIndex->addFixing(Date(5, January, 2023), 9010.0);
         equityIndex->addFixing(today, 8690.0);
@@ -121,7 +122,6 @@ void checkQuantoCorrection(bool includeDividend, bool bumpData = false) {
     const Real tolerance = 1.0e-6;
 
     CommonVars vars;
-
     ext::shared_ptr<EquityIndex> equityIndex =
         includeDividend ?
             vars.equityIndex :

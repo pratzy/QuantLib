@@ -11,7 +11,7 @@
  under the terms of the QuantLib license.  You should have received a
  copy of the license along with this program; if not, please email
  <quantlib-dev@lists.sf.net>. The license is also available online at
- <http://quantlib.org/license.shtml>.
+ <https://www.quantlib.org/license.shtml>.
 
  This program is distributed in the hope that it will be useful, but WITHOUT
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
@@ -293,6 +293,15 @@ namespace QuantLib {
                             || (d == 22 && m == May)      // Wisakha Bucha Day
                             || (d == 22 && m == July)     // Substitution for Asarnha Bucha Day (Saturday 20th July 2024)
                             || (d == 23 && m == October)  // Chulalongkorn Day
+            ))
+            return false;
+
+        if ((y == 2025) && ((d == 12 && m == February)    // Substitution for Makha Bucha Day (Wednesday 12th February 2025)
+            || (d == 7 && m == April)     // Substitution for Chakri Memorial Day (Sunday 6th April 2025)
+            || (d == 5 && m == May)       // Substitution for Coronation Day (Sunday 4th May 2025)
+            || (d == 12 && m == May)      // Wisakha Bucha Day
+            || (d == 10 && m == July)     // Substitution for Asarnha Bucha Day (Tuesday 20th July 2025)
+            || (d == 23 && m == October)  // Chulalongkorn Day
             ))
             return false;
 

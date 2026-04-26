@@ -11,7 +11,7 @@
  under the terms of the QuantLib license.  You should have received a
  copy of the license along with this program; if not, please email
  <quantlib-dev@lists.sf.net>. The license is also available online at
- <http://quantlib.org/license.shtml>.
+ <https://www.quantlib.org/license.shtml>.
 
  This program is distributed in the hope that it will be useful, but WITHOUT
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
@@ -163,7 +163,7 @@ namespace QuantLib {
         Real P0 = discountCurve_->discount(d0);
         Real Q0 = probability_->survivalProbability(d0);
         Date d1;
-        std::vector<Date>::const_iterator it =
+        auto it =
             std::upper_bound(nodes.begin(), nodes.end(), effectiveProtectionStart);
 
         for(;it != nodes.end(); ++it) {
@@ -194,7 +194,7 @@ namespace QuantLib {
             Q0 = Q1;
         }
         protectionNpv *= arguments_.claim->amount(
-            Null<Date>(), arguments_.notional, recoveryRate_);
+            Date(), arguments_.notional, recoveryRate_);
 
         results_.defaultLegNPV = protectionNpv;
 
@@ -232,16 +232,16 @@ namespace QuantLib {
                 localNodes.push_back(start);
                 //add intermediary nodes, if any
                 if (forwardsInCouponPeriod_ == Piecewise) {
-                    std::vector<Date>::const_iterator it0 =
+                    auto it0 =
                         std::upper_bound(nodes.begin(), nodes.end(), start);
-                    std::vector<Date>::const_iterator it1 =
+                    auto it1 =
                         std::lower_bound(nodes.begin(), nodes.end(), end);
                     localNodes.insert(localNodes.end(), it0, it1);
                 }
                 localNodes.push_back(end);
 
                 Real defaultAccrThisNode = 0.;
-                std::vector<Date>::const_iterator node = localNodes.begin();
+                auto node = localNodes.begin();
                 Real t0 = discountCurve_->timeFromReference(*node);
                 Real P0 = discountCurve_->discount(*node);
                 Real Q0 = probability_->survivalProbability(*node);

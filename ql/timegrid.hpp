@@ -11,7 +11,7 @@
  under the terms of the QuantLib license.  You should have received a
  copy of the license along with this program; if not, please email
  <quantlib-dev@lists.sf.net>. The license is also available online at
- <http://quantlib.org/license.shtml>.
+ <https://www.quantlib.org/license.shtml>.
 
  This program is distributed in the hope that it will be useful, but WITHOUT
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
@@ -106,16 +106,21 @@ namespace QuantLib {
                 std::adjacent_difference(mandatoryTimes_.begin(),
                                          mandatoryTimes_.end(),
                                          std::back_inserter(diff));
+                QL_REQUIRE(!diff.empty(), "at least two distinct points required in time grid");
+
                 if (diff.front()==0.0)
                     diff.erase(diff.begin());
-                dtMax = *(std::min_element(diff.begin(), diff.end()));
+
+                auto i = std::min_element(diff.begin(), diff.end());
+                QL_REQUIRE(i != diff.end(), "not enough distinct points in time grid");
+                dtMax = *i;
             } else {
                 dtMax = last/steps;
             }
 
             Time periodBegin = 0.0;
             times_.push_back(periodBegin);
-            for (std::vector<Time>::const_iterator t=mandatoryTimes_.begin();
+            for (auto t=mandatoryTimes_.begin();
                                                    t<mandatoryTimes_.end();
                                                    ++t) {
                 Time periodEnd = *t;

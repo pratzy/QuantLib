@@ -12,7 +12,7 @@
  under the terms of the QuantLib license.  You should have received a
  copy of the license along with this program; if not, please email
  <quantlib-dev@lists.sf.net>. The license is also available online at
- <http://quantlib.org/license.shtml>.
+ <https://www.quantlib.org/license.shtml>.
 
  This program is distributed in the hope that it will be useful, but WITHOUT
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
@@ -44,10 +44,7 @@ namespace QuantLib {
 
         // start of curve data
         static Date initialDate(const ZeroInflationTermStructure* t) {
-            if (t->hasExplicitBaseDate())
-                return t->baseDate();
-            else
-                return inflationPeriod(t->referenceDate() - t->observationLag(), t->frequency()).first;
+            return t->baseDate();
         }
         // value at reference date
         static Rate initialValue(const ZeroInflationTermStructure*) {
@@ -104,12 +101,20 @@ namespace QuantLib {
             if (i==1)
                 data[0] = level; // the first point is updated as well
         }
+        // transformation to add constraints to an unconstrained optimization
+        template <class C>
+        static Real transformDirect(Real x, Size, const C*) {
+            return x;
+        }
+        template <class C>
+        static Real transformInverse(Real x, Size, const C*) {
+            return x;
+        }
         // upper bound for convergence loop
-        // calibration is trivial, should be immediate
-        static Size maxIterations() { return 5; }
+        static Size maxIterations() { return 40; }
     };
 
-    //! Bootstrap traits to use for PiecewiseZeroInflationCurve
+    //! Bootstrap traits to use for PiecewiseYoYInflationCurve
     class YoYInflationTraits {
       public:
         // helper class
@@ -117,14 +122,7 @@ namespace QuantLib {
 
         // start of curve data
         static Date initialDate(const YoYInflationTermStructure* t) {
-            if (t->hasExplicitBaseDate()) {
-                return t->baseDate();
-            } else if (t->indexIsInterpolated()) {
-                return t->referenceDate() - t->observationLag();
-            } else {
-                return inflationPeriod(t->referenceDate() - t->observationLag(),
-                                       t->frequency()).first;
-            }
+            return t->baseDate();
         }
 
         // value at reference date
@@ -178,6 +176,15 @@ namespace QuantLib {
                                 Rate level,
                                 Size i) {
             data[i] = level;
+        }
+        // transformation to add constraints to an unconstrained optimization
+        template <class C>
+        static Real transformDirect(Real x, Size, const C*) {
+            return x;
+        }
+        template <class C>
+        static Real transformInverse(Real x, Size, const C*) {
+            return x;
         }
         // upper bound for convergence loop
         static Size maxIterations() { return 40; }

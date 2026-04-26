@@ -11,17 +11,15 @@
  under the terms of the QuantLib license.  You should have received a
  copy of the license along with this program; if not, please email
  <quantlib-dev@lists.sf.net>. The license is also available online at
- <http://quantlib.org/license.shtml>.
+ <https://www.quantlib.org/license.shtml>.
 
  This program is distributed in the hope that it will be useful, but WITHOUT
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
 */
 
-#include "preconditions.hpp"
 #include "toplevelfixture.hpp"
 #include "utilities.hpp"
-#include <ql/experimental/exoticoptions/analyticpdfhestonengine.hpp>
 #include <ql/instruments/barrieroption.hpp>
 #include <ql/instruments/doublebarrieroption.hpp>
 #include <ql/instruments/forwardvanillaoption.hpp>
@@ -70,6 +68,7 @@
 #include <ql/pricingengines/forward/forwardengine.hpp>
 #include <ql/pricingengines/vanilla/analyticeuropeanengine.hpp>
 #include <ql/pricingengines/vanilla/analytichestonengine.hpp>
+#include <ql/pricingengines/vanilla/analyticpdfhestonengine.hpp>
 #include <ql/pricingengines/vanilla/fdblackscholesvanillaengine.hpp>
 #include <ql/pricingengines/vanilla/fdhestonvanillaengine.hpp>
 #include <ql/pricingengines/vanilla/mceuropeanhestonengine.hpp>
@@ -283,7 +282,7 @@ void hestonFokkerPlanckFwdEquationTest(const FokkerPlanckFwdTestCase& testCase) 
 
     const FdmSquareRootFwdOp::TransformationType transformationType = testCase.trafoType;
     Real lowerBound, upperBound;
-    std::vector<ext::tuple<Real, Real, bool> > cPoints;
+    std::vector<std::tuple<Real, Real, bool> > cPoints;
 
     const SquareRootProcessRNDCalculator rnd(v0, kappa, theta, sigma);
     switch (transformationType) {
@@ -297,9 +296,9 @@ void hestonFokkerPlanckFwdEquationTest(const FokkerPlanckFwdTestCase& testCase) 
               const Real upperBoundDensity = 100;
               const Real lowerBoundDensity = 1.0;
               cPoints = {
-                  ext::make_tuple(lowerBound, lowerBoundDensity, false),
-                  ext::make_tuple(v0Center, v0Density, true),
-                  ext::make_tuple(upperBound, upperBoundDensity, false)
+                  std::make_tuple(lowerBound, lowerBoundDensity, false),
+                  std::make_tuple(v0Center, v0Density, true),
+                  std::make_tuple(upperBound, upperBoundDensity, false)
               };
           }
           break;
@@ -312,8 +311,8 @@ void hestonFokkerPlanckFwdEquationTest(const FokkerPlanckFwdTestCase& testCase) 
               const Real v0Density = 0.1;
               const Real lowerBoundDensity = 0.0001;
               cPoints = {
-                  ext::make_tuple(lowerBound, lowerBoundDensity, false),
-                  ext::make_tuple(v0Center, v0Density, true)
+                  std::make_tuple(lowerBound, lowerBoundDensity, false),
+                  std::make_tuple(v0Center, v0Density, true)
               };
           }
           break;
@@ -326,8 +325,8 @@ void hestonFokkerPlanckFwdEquationTest(const FokkerPlanckFwdTestCase& testCase) 
               const Real v0Density = 1.0;
               const Real lowerBoundDensity = 0.005;
               cPoints = {
-                  ext::make_tuple(lowerBound, lowerBoundDensity, false),
-                  ext::make_tuple(v0Center, v0Density, true)
+                  std::make_tuple(lowerBound, lowerBoundDensity, false),
+                  std::make_tuple(v0Center, v0Density, true)
               };
           }
           break;
@@ -432,7 +431,7 @@ void hestonFokkerPlanckFwdEquationTest(const FokkerPlanckFwdTestCase& testCase) 
             }
         }
 
-        avg/=LENGTH(strikes); // NOLINT(bugprone-integer-division)
+        avg/=std::size(strikes); // NOLINT(bugprone-integer-division)
 
         if (avg > testCase.avgEps) {
             BOOST_FAIL("failed to reproduce Heston SLV prices"
@@ -484,7 +483,7 @@ createLocalVolMatrixFromProcess(const ext::shared_ptr<BlackScholesMertonProcess>
     return surface;
 }
 
-ext::tuple<std::vector<Real>, std::vector<Date>,
+std::tuple<std::vector<Real>, std::vector<Date>,
            ext::shared_ptr<BlackVarianceSurface> >
 createSmoothImpliedVol(const DayCounter& dc, const Calendar& cal) {
 
@@ -539,7 +538,7 @@ createSmoothImpliedVol(const DayCounter& dc, const Calendar& cal) {
                                                    BlackVarianceSurface::ConstantExtrapolation));
     volTS->setInterpolation<Bicubic>();
 
-    return ext::make_tuple(surfaceStrikes, dates, volTS);
+    return std::make_tuple(surfaceStrikes, dates, volTS);
 }
 
 struct HestonModelParams {
@@ -703,7 +702,7 @@ ext::shared_ptr<LocalVolTermStructure> getFixedLocalVolFromHeston(
                                                  ext::make_shared<Matrix>(nStrikes, timeGrid->size()-1));
     for (Size i=1; i < timeGrid->size(); ++i) {
         const Time t = timeGrid->at(i);
-        const ext::shared_ptr<std::vector<Real> > strikeSlice = strikes[i-1];
+        const ext::shared_ptr<std::vector<Real> >& strikeSlice = strikes[i-1];
 
         for (Size j=0; j < nStrikes; ++j) {
             const Real s = (*strikeSlice)[j];
@@ -1138,7 +1137,7 @@ BOOST_AUTO_TEST_CASE(testSquareRootFokkerPlanckFwdEquation) {
     }
 }
 
-BOOST_AUTO_TEST_CASE(testHestonFokkerPlanckFwdEquation, *precondition(if_speed(Slow))) {
+BOOST_AUTO_TEST_CASE(testHestonFokkerPlanckFwdEquation) {
     BOOST_TEST_MESSAGE("Testing Fokker-Planck forward equation "
                        "for the Heston process...");
 
@@ -1194,7 +1193,7 @@ BOOST_AUTO_TEST_CASE(testHestonFokkerPlanckFwdEquation, *precondition(if_speed(S
     }
 }
 
-BOOST_AUTO_TEST_CASE(testHestonFokkerPlanckFwdEquationLogLVLeverage, *precondition(if_speed(Fast))) {
+BOOST_AUTO_TEST_CASE(testHestonFokkerPlanckFwdEquationLogLVLeverage) {
     BOOST_TEST_MESSAGE("Testing Fokker-Planck forward equation "
                        "for the Heston process Log Transformation with leverage LV limiting case...");
 
@@ -1239,10 +1238,10 @@ BOOST_AUTO_TEST_CASE(testHestonFokkerPlanckFwdEquationLogLVLeverage, *preconditi
     const Real lowerBound = rnd.stationary_invcdf(0.01);
 
     const Real beta = 10.0;
-    std::vector<ext::tuple<Real, Real, bool>> critPoints = {
-        ext::make_tuple(lowerBound, beta, true),
-        ext::make_tuple(v0, beta/100, true),
-        ext::make_tuple(upperBound, beta, true)
+    std::vector<std::tuple<Real, Real, bool>> critPoints = {
+        std::make_tuple(lowerBound, beta, true),
+        std::make_tuple(v0, beta/100, true),
+        std::make_tuple(upperBound, beta, true)
     };
     const ext::shared_ptr<Fdm1dMesher> varianceMesher(
 		ext::make_shared<Concentrating1dMesher>(lowerBound, upperBound, vGrid, critPoints));
@@ -1254,12 +1253,12 @@ BOOST_AUTO_TEST_CASE(testHestonFokkerPlanckFwdEquationLogLVLeverage, *preconditi
     const ext::shared_ptr<FdmMesherComposite>
         mesher(ext::make_shared<FdmMesherComposite>(equityMesher, varianceMesher));
 
-    const ext::tuple<std::vector<Real>, std::vector<Date>,
+    const std::tuple<std::vector<Real>, std::vector<Date>,
                  ext::shared_ptr<BlackVarianceSurface> > smoothSurface =
         createSmoothImpliedVol(dayCounter, calendar);
     const ext::shared_ptr<BlackScholesMertonProcess> lvProcess(
 		ext::make_shared<BlackScholesMertonProcess>(spot, qTS, rTS,
-        Handle<BlackVolTermStructure>(ext::get<2>(smoothSurface))));
+        Handle<BlackVolTermStructure>(std::get<2>(smoothSurface))));
 
     // step two days using non-correlated process
     const Time eT = 2.0/365;
@@ -1295,10 +1294,10 @@ BOOST_AUTO_TEST_CASE(testHestonFokkerPlanckFwdEquationLogLVLeverage, *preconditi
           102.2222222, 106.6666667, 111.1111111, 115.5555556, 120,
           124.4444444, 166.6666667, 222.2222222, 444.4444444, 666.6666667 };
 
-    Matrix surface(denseStrikes.size(), ext::get<1>(smoothSurface).size());
+    Matrix surface(denseStrikes.size(), std::get<1>(smoothSurface).size());
     std::vector<Time> times(surface.columns());
 
-    const std::vector<Date>& dates = ext::get<1>(smoothSurface);
+    const std::vector<Date>& dates = std::get<1>(smoothSurface);
     ext::shared_ptr<Matrix> m = createLocalVolMatrixFromProcess(
         lvProcess, denseStrikes, dates, times);
 
@@ -1360,7 +1359,7 @@ BOOST_AUTO_TEST_CASE(testHestonFokkerPlanckFwdEquationLogLVLeverage, *preconditi
     }
 }
 
-BOOST_AUTO_TEST_CASE(testBlackScholesFokkerPlanckFwdEquationLocalVol, *precondition(if_speed(Fast))) {
+BOOST_AUTO_TEST_CASE(testBlackScholesFokkerPlanckFwdEquationLocalVol) {
     BOOST_TEST_MESSAGE(
             "Testing Fokker-Planck forward equation for BS Local Vol process...");
 
@@ -1381,14 +1380,14 @@ BOOST_AUTO_TEST_CASE(testBlackScholesFokkerPlanckFwdEquationLocalVol, *precondit
     const Handle<YieldTermStructure> qTS(
             flatRate(todaysDate, q, dayCounter));
 
-    ext::tuple<std::vector<Real>, std::vector<Date>,
+    std::tuple<std::vector<Real>, std::vector<Date>,
             ext::shared_ptr<BlackVarianceSurface> > smoothImpliedVol =
             createSmoothImpliedVol(dayCounter, calendar);
 
-    const std::vector<Real>& strikes = ext::get<0>(smoothImpliedVol);
-    const std::vector<Date>& dates = ext::get<1>(smoothImpliedVol);
+    const std::vector<Real>& strikes = std::get<0>(smoothImpliedVol);
+    const std::vector<Date>& dates = std::get<1>(smoothImpliedVol);
     const Handle<BlackVolTermStructure> vTS =
-        Handle<BlackVolTermStructure>(ext::get<2>(smoothImpliedVol));
+        Handle<BlackVolTermStructure>(std::get<2>(smoothImpliedVol));
 
     const Size xGrid = 101;
     const Size tGrid = 51;
@@ -1532,7 +1531,7 @@ BOOST_AUTO_TEST_CASE(testBlackScholesFokkerPlanckFwdEquationLocalVol, *precondit
 //    };
 //
 //
-//    for (Size i=0; i < LENGTH(testCases); ++i) {
+//    for (Size i=0; i < std::size(testCases); ++i) {
 //        BOOST_TEST_MESSAGE("Testing stochastic local volatility calibration case " << i << " ...");
 //        lsvCalibrationTest(testCases[i]);
 //    }
@@ -1560,7 +1559,7 @@ BOOST_AUTO_TEST_CASE(testLocalVolsvSLVPropDensity) {
         flatRate(todaysDate, q, dayCounter));
 
     const Handle<BlackVolTermStructure> vTS = Handle<BlackVolTermStructure>(
-        ext::get<2>(createSmoothImpliedVol(dayCounter, calendar)));
+        std::get<2>(createSmoothImpliedVol(dayCounter, calendar)));
 
     // Heston parameter from implied calibration
     const Real kappa =  2.0;
@@ -1826,7 +1825,7 @@ BOOST_AUTO_TEST_CASE(testBarrierPricingViaHestonLocalVol) {
 //        -0.390616, -0.380888, -0.371156, -0.361425,
 //        -0.351699, -0.341995 };
 //
-//    for (Size i=0; i < LENGTH(eta); ++i) {
+//    for (Size i=0; i < std::size(eta); ++i) {
 //        const Handle<HestonModel> modHestonModel(
 //            ext::make_shared<HestonModel>(
 //                ext::make_shared<HestonProcess>(
@@ -1857,7 +1856,7 @@ BOOST_AUTO_TEST_CASE(testBarrierPricingViaHestonLocalVol) {
 //    }
 //}
 
-BOOST_AUTO_TEST_CASE(testMonteCarloVsFdmPricing, *precondition(if_speed(Fast))) {
+BOOST_AUTO_TEST_CASE(testMonteCarloVsFdmPricing) {
     BOOST_TEST_MESSAGE(
         "Testing Monte-Carlo vs FDM Pricing for "
         "Heston SLV models...");
@@ -1962,7 +1961,7 @@ BOOST_AUTO_TEST_CASE(testMonteCarloVsFdmPricing, *precondition(if_speed(Fast))) 
     }
 }
 
-BOOST_AUTO_TEST_CASE(testMonteCarloCalibration, *precondition(if_speed(Fast))) {
+BOOST_AUTO_TEST_CASE(testMonteCarloCalibration) {
     BOOST_TEST_MESSAGE(
         "Testing Monte-Carlo Calibration...");
 
@@ -2175,7 +2174,7 @@ BOOST_AUTO_TEST_CASE(testMonteCarloCalibration, *precondition(if_speed(Fast))) {
 //    };
 //
 //    std::vector<std::vector<GeneralStatistics> >
-//        stats(2, std::vector<GeneralStatistics>(LENGTH(strikes)));
+//        stats(2, std::vector<GeneralStatistics>(std::size(strikes)));
 //
 //    for (Size i=0; i < 5*nSim; ++i) {
 //        for (Size k= 0; k < 2; ++k) {
@@ -2188,7 +2187,7 @@ BOOST_AUTO_TEST_CASE(testMonteCarloCalibration, *precondition(if_speed(Fast))) {
 //            const Real S_t2 = antiPath.value[0][resetIndex-1];
 //            const Real S_T2 = antiPath.value[0][tSteps-1];
 //
-//            for (Size j=0; j < LENGTH(strikes); ++j) {
+//            for (Size j=0; j < std::size(strikes); ++j) {
 //                const Real strike = strikes[j];
 //                if (strike < 1.0)
 //                    stats[k][j].add(0.5*(
@@ -2223,7 +2222,7 @@ BOOST_AUTO_TEST_CASE(testMonteCarloCalibration, *precondition(if_speed(Fast))) {
 //
 //    const DiscountFactor df = rTS->discount(grid.back());
 //
-//    for (Size j=0; j < LENGTH(strikes); ++j) {
+//    for (Size j=0; j < std::size(strikes); ++j) {
 //        for (Size k= 0; k < 2; ++k) {
 //            const Real strike = strikes[j];
 //            const Real npv = stats[k][j].mean() * df;
@@ -2256,7 +2255,7 @@ BOOST_AUTO_TEST_CASE(testMonteCarloCalibration, *precondition(if_speed(Fast))) {
 //    }
 //}
 
-BOOST_AUTO_TEST_CASE(testMoustacheGraph, *precondition(if_speed(Fast))) {
+BOOST_AUTO_TEST_CASE(testMoustacheGraph) {
     BOOST_TEST_MESSAGE(
         "Testing double no touch pricing with SLV and mixing...");
 

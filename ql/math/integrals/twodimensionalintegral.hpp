@@ -10,7 +10,7 @@
  under the terms of the QuantLib license.  You should have received a
  copy of the license along with this program; if not, please email
  <quantlib-dev@lists.sf.net>. The license is also available online at
- <http://quantlib.org/license.shtml>.
+ <https://www.quantlib.org/license.shtml>.
 
  This program is distributed in the hope that it will be useful, but WITHOUT
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
@@ -26,7 +26,7 @@
 
 #include <ql/math/integrals/integral.hpp>
 #include <ql/shared_ptr.hpp>
-#include <ql/functional.hpp>
+#include <functional>
 #include <utility>
 
 namespace QuantLib {
@@ -43,7 +43,7 @@ namespace QuantLib {
                                ext::shared_ptr<Integrator> integratorY)
         : integratorX_(std::move(integratorX)), integratorY_(std::move(integratorY)) {}
 
-        Real operator()(const ext::function<Real (Real, Real)>& f,
+        Real operator()(const std::function<Real (Real, Real)>& f,
                         const std::pair<Real, Real>& a,
                         const std::pair<Real, Real>& b) const {
             return (*integratorX_)([&](Real x) { return g(f, x, a.second, b.second); },
@@ -51,7 +51,7 @@ namespace QuantLib {
         }
 
       private:
-        Real g(const ext::function<Real (Real, Real)>& f,
+        Real g(const std::function<Real (Real, Real)>& f,
                Real x, Real a, Real b) const {
             return (*integratorY_)([&](Real y) { return f(x, y); }, a, b);
         }

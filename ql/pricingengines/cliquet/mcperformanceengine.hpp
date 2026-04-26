@@ -10,7 +10,7 @@
  under the terms of the QuantLib license.  You should have received a
  copy of the license along with this program; if not, please email
  <quantlib-dev@lists.sf.net>. The license is also available online at
- <http://quantlib.org/license.shtml>.
+ <https://www.quantlib.org/license.shtml>.
 
  This program is distributed in the hope that it will be useful, but WITHOUT
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
@@ -53,9 +53,9 @@ namespace QuantLib {
                                                          requiredSamples_,
                                                          maxSamples_);
             results_.value = this->mcModel_->sampleAccumulator().mean();
-            if (RNG::allowsErrorEstimate)
-            results_.errorEstimate =
-                this->mcModel_->sampleAccumulator().errorEstimate();
+            if constexpr (RNG::allowsErrorEstimate)
+                results_.errorEstimate =
+                    this->mcModel_->sampleAccumulator().errorEstimate();
         }
 
       protected:
@@ -140,6 +140,7 @@ namespace QuantLib {
     inline TimeGrid MCPerformanceEngine<RNG,S>::timeGrid() const {
 
         std::vector<Time> fixingTimes;
+        fixingTimes.reserve(arguments_.resetDates.size());
         for (Size i=0; i<arguments_.resetDates.size(); i++)
             fixingTimes.push_back(process_->time(arguments_.resetDates[i]));
         fixingTimes.push_back(process_->time(arguments_.exercise->lastDate()));
@@ -165,6 +166,7 @@ namespace QuantLib {
 
         std::vector<DiscountFactor> discounts;
 
+        discounts.reserve(arguments_.resetDates.size());
         for (Size k=0;k<arguments_.resetDates.size();k++) {
             discounts.push_back(this->process_->riskFreeRate()->discount(
                                                    arguments_.resetDates[k]));

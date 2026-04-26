@@ -10,7 +10,7 @@
  under the terms of the QuantLib license.  You should have received a
  copy of the license along with this program; if not, please email
  <quantlib-dev@lists.sf.net>. The license is also available online at
- <http://quantlib.org/license.shtml>.
+ <https://www.quantlib.org/license.shtml>.
 
  This program is distributed in the hope that it will be useful, but WITHOUT
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
@@ -37,8 +37,9 @@ namespace QuantLib {
 
     LaplaceInterpolation::LaplaceInterpolation(std::function<Real(const std::vector<Size>&)> y,
                                                std::vector<std::vector<Real>> x,
-                                               const Real relTol)
-    : y_(std::move(y)), x_(std::move(x)), relTol_(relTol) {
+                                               Real relTol,
+                                               Size maxIterMultiplier)
+    : y_(std::move(y)), x_(std::move(x)), relTol_(relTol), maxIterMultiplier_(maxIterMultiplier) {
 
         // set up the mesher
 
@@ -120,7 +121,7 @@ for (auto const& m : map_)
         std::vector<Real> corner_h(dim.size());
         std::vector<Size> corner_neighbour_index(dim.size());
         for (auto const& pos : *layout_) {
-            auto coord = pos.coordinates();
+            const auto& coord = pos.coordinates();
             Real val =
                 y_(numberOfCoordinatesIncluded_ == x_.size() ? coord : fullCoordinates(coord));
             QL_REQUIRE(rowit != op.end1() && rowit.index1() == count,
@@ -144,7 +145,7 @@ for (auto const& m : map_)
                     // handling of the "corners", all second derivs are zero in the op
                     // this directly generalizes Numerical Recipes, 3rd ed, eq 3.8.6
                     Real sum_corner_h =
-                        std::accumulate(corner_h.begin(), corner_h.end(), Real(0.0), std::plus<Real>());
+                        std::accumulate(corner_h.begin(), corner_h.end(), Real(0.0), std::plus<>());
                     for (Size j = 0; j < dim.size(); ++j) {
                         std::vector<Size> coord_j(coord);
                         coord_j[j] = corner_neighbour_index[j];
@@ -173,7 +174,7 @@ for (auto const& m : map_)
             ++rowit;
         }
 
-        interpolatedValues_ = BiCGstab(f_A(g), 10 * N, relTol_).solve(rhs, guess).x;
+        interpolatedValues_ = BiCGstab(f_A(g), maxIterMultiplier_ * N, relTol_).solve(rhs, guess).x;
     }
 
     std::vector<Size>
@@ -213,7 +214,8 @@ for (auto const& m : map_)
     void laplaceInterpolation(Matrix& A,
                               const std::vector<Real>& x,
                               const std::vector<Real>& y,
-                              Real relTol) {
+                              Real relTol,
+                              Size maxIterMultiplier) {
 
         std::vector<std::vector<Real>> tmp;
         tmp.push_back(y);
@@ -233,7 +235,7 @@ for (auto const& m : map_)
             [&A](const std::vector<Size>& coordinates) {
                 return A(coordinates[0], coordinates[1]);
             },
-            tmp, relTol);
+            tmp, relTol, maxIterMultiplier);
 
         for (Size i = 0; i < A.rows(); ++i) {
             for (Size j = 0; j < A.columns(); ++j) {

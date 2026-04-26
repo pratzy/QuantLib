@@ -11,7 +11,7 @@
  under the terms of the QuantLib license.  You should have received a
  copy of the license along with this program; if not, please email
  <quantlib-dev@lists.sf.net>. The license is also available online at
- <http://quantlib.org/license.shtml>.
+ <https://www.quantlib.org/license.shtml>.
 
  This program is distributed in the hope that it will be useful, but WITHOUT
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
@@ -28,8 +28,8 @@
 #include <ql/time/date.hpp>
 #include <ql/utilities/null.hpp>
 #include <ql/errors.hpp>
-#include <ql/functional.hpp>
 #include <boost/iterator/transform_iterator.hpp>
+#include <functional>
 #include <iterator>
 #include <algorithm>
 #include <map>
@@ -94,7 +94,7 @@ namespace QuantLib {
         //@{
         //! returns the (possibly null) datum corresponding to the given date
         T operator[](const Date& d) const {
-            typename Container::const_iterator found = values_.find(d);
+            auto found = values_.find(d);
             if (found == values_.cend())
                 return Null<T>();
             return found->second;
@@ -145,8 +145,8 @@ namespace QuantLib {
         // The following typedef enables reverse iterators for
         // bidirectional_iterator_tag category.
         typedef std::conditional_t<
-                std::is_same<iterator_category, std::bidirectional_iterator_tag>::value ||
-                std::is_base_of<std::bidirectional_iterator_tag, iterator_category>::value,
+                std::is_same_v<iterator_category, std::bidirectional_iterator_tag> ||
+                std::is_base_of_v<std::bidirectional_iterator_tag, iterator_category>,
             std::bidirectional_iterator_tag, std::input_iterator_tag> enable_reverse;
 
         typedef typename
@@ -169,107 +169,12 @@ namespace QuantLib {
 
       private:
         typedef typename Container::value_type container_value_type;
-        typedef ext::function<Date(const container_value_type&)>
+        typedef std::function<Date(const container_value_type&)>
                                                               projection_time;
-        typedef ext::function<T(const container_value_type&)>
+        typedef std::function<T(const container_value_type&)>
                                                              projection_value;
 
       public:
-        //! \name Projection iterators
-        //@{
-
-        /*! \deprecated Use const_iterator instead and access the `first` data member.
-                        Deprecated in version 1.31.
-        */
-        [[deprecated("Use const_iterator instead and access the `first` data member.")]]
-        typedef boost::transform_iterator<projection_time, const_iterator> const_time_iterator;
-
-        /*! \deprecated Use const_iterator instead and access the `second` data member.
-                        Deprecated in version 1.31.
-        */
-        [[deprecated("Use const_iterator instead and access the `second` data member.")]]
-        typedef boost::transform_iterator<projection_value, const_iterator> const_value_iterator;
-
-        /*! \deprecated Use const_reverse_iterator instead and access the `first` data member.
-                        Deprecated in version 1.31.
-        */
-        [[deprecated("Use const_reverse_iterator instead and access the `first` data member.")]]
-        typedef boost::transform_iterator<projection_time, const_reverse_iterator> const_reverse_time_iterator;
-
-        /*! \deprecated Use const_reverse_iterator instead and access the `second` data member.
-                        Deprecated in version 1.31.
-        */
-        [[deprecated("Use const_reverse_iterator instead and access the `second` data member.")]]
-        typedef boost::transform_iterator<projection_value, const_reverse_iterator> const_reverse_value_iterator;
-
-        QL_DEPRECATED_DISABLE_WARNING
-
-        /*! \deprecated Use cbegin instead and access the `second` data member.
-                        Deprecated in version 1.31.
-        */
-        [[deprecated("Use cbegin instead and access the `second` data member.")]]
-        const_value_iterator cbegin_values() const {
-            return const_value_iterator(cbegin(), get_value);
-        }
-
-        /*! \deprecated Use cend instead and access the `second` data member.
-                        Deprecated in version 1.31.
-        */
-        [[deprecated("Use cend instead and access the `second` data member.")]]
-        const_value_iterator cend_values() const {
-            return const_value_iterator(cend(), get_value);
-        }
-
-        /*! \deprecated Use crbegin instead and access the `second` data member.
-                        Deprecated in version 1.31.
-        */
-        [[deprecated("Use crbegin instead and access the `second` data member.")]]
-        const_reverse_value_iterator crbegin_values() const {
-            return const_reverse_value_iterator(crbegin(), get_value);
-        }
-
-        /*! \deprecated Use crend instead and access the `second` data member.
-                        Deprecated in version 1.31.
-        */
-        [[deprecated("Use crend instead and access the `second` data member.")]]
-        const_reverse_value_iterator crend_values() const {
-            return const_reverse_value_iterator(crend(), get_value);
-        }
-
-        /*! \deprecated Use cbegin instead and access the `first` data member.
-                        Deprecated in version 1.31.
-        */
-        [[deprecated("Use cbegin instead and access the `first` data member.")]]
-        const_time_iterator cbegin_time() const {
-            return const_time_iterator(cbegin(), get_time);
-        }
-
-        /*! \deprecated Use cend instead and access the `first` data member.
-                        Deprecated in version 1.31.
-        */
-        [[deprecated("Use cend instead and access the `first` data member.")]]
-        const_time_iterator cend_time() const {
-            return const_time_iterator(cend(), get_time);
-        }
-
-        /*! \deprecated Use crbegin instead and access the `first` data member.
-                        Deprecated in version 1.31.
-        */
-        [[deprecated("Use crbegin instead and access the `first` data member.")]]
-        const_reverse_time_iterator crbegin_time() const {
-            return const_reverse_time_iterator(crbegin(), get_time);
-        }
-
-        /*! \deprecated Use crend instead and access the `first` data member.
-                        Deprecated in version 1.31.
-        */
-        [[deprecated("Use crend instead and access the `first` data member.")]]
-        const_reverse_time_iterator crend_time() const {
-            return const_reverse_time_iterator(crend(), get_time);
-        }
-
-        QL_DEPRECATED_ENABLE_WARNING
-
         //! \name Utilities
         //@{
         const_iterator find(const Date&);
@@ -328,7 +233,7 @@ namespace QuantLib {
     template <class T, class C>
     inline typename TimeSeries<T,C>::const_iterator
     TimeSeries<T,C>::find(const Date& d) {
-        const_iterator i = values_.find(d);
+        auto i = values_.find(d);
         if (i == values_.end()) {
             values_[d] = Null<T>();
             i = values_.find(d);

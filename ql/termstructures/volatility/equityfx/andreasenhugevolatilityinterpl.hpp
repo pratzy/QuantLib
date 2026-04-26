@@ -10,7 +10,7 @@
  under the terms of the QuantLib license.  You should have received a
  copy of the license along with this program; if not, please email
  <quantlib-dev@lists.sf.net>. The license is also available online at
- <http://quantlib.org/license.shtml>.
+ <https://www.quantlib.org/license.shtml>.
 
  This program is distributed in the hope that it will be useful, but WITHOUT
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
@@ -32,8 +32,7 @@
 #include <ql/math/optimization/levenbergmarquardt.hpp>
 #include <ql/math/interpolations/linearinterpolation.hpp>
 #include <ql/termstructures/volatility/equityfx/localvoltermstructure.hpp>
-
-#include <ql/tuple.hpp>
+#include <tuple>
 #include <utility>
 
 namespace QuantLib {
@@ -84,7 +83,7 @@ namespace QuantLib {
         const Handle<YieldTermStructure>& riskFreeRate() const;
 
         // returns min, max and average error in volatility units
-        ext::tuple<Real, Real, Real> calibrationError() const;
+        std::tuple<Real, Real, Real> calibrationError() const;
 
         // returns the option price of the calibration type. In case
         // of CallPut it return the call option price
@@ -97,7 +96,7 @@ namespace QuantLib {
 
       private:
         typedef std::map<Time,
-            ext::tuple<
+            std::tuple<
                 Real,
                 ext::shared_ptr<Array>,
                 ext::shared_ptr<Interpolation> > > TimeValueCacheType;

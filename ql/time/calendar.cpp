@@ -15,7 +15,7 @@
  under the terms of the QuantLib license.  You should have received a
  copy of the license along with this program; if not, please email
  <quantlib-dev@lists.sf.net>. The license is also available online at
- <http://quantlib.org/license.shtml>.
+ <https://www.quantlib.org/license.shtml>.
 
  This program is distributed in the hope that it will be useful, but WITHOUT
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
@@ -159,13 +159,13 @@ namespace QuantLib {
             Date d1 = d + n*unit;
 
             // we are sure the unit is Months or Years
-            if (endOfMonth){
-                if (c == Unadjusted && Date::isEndOfMonth(d)){
-                    // move to end of calendar day if using Unadjusted convention and d is last calendar day
-                    return Date::endOfMonth(d1);
-                } else if (isEndOfMonth(d)) {
-                    // move to end of business day if d is last bussiness day
-                    return Calendar::endOfMonth(d1);
+            if (endOfMonth) {
+                if (c == Unadjusted) {
+                    // move to the last calendar day if d is the last calendar day
+                    if (Date::isEndOfMonth(d)) return Date::endOfMonth(d1);
+                } else {
+                    // move to the last business day if d is the last business day
+                    if (isEndOfMonth(d)) return Calendar::endOfMonth(d1);
                 }
             }
             return adjust(d1, c);
@@ -197,7 +197,7 @@ namespace QuantLib {
     }
 
     Day Calendar::WesternImpl::easterMonday(Year y) {
-        static const Day EasterMonday[] = {
+        static const unsigned char EasterMonday[] = {
                   98,  90, 103,  95, 114, 106,  91, 111, 102,   // 1901-1909
              87, 107,  99,  83, 103,  95, 115,  99,  91, 111,   // 1910-1919
              96,  87, 107,  92, 112, 103,  95, 108, 100,  91,   // 1920-1929
@@ -239,7 +239,7 @@ namespace QuantLib {
     }
 
     Day Calendar::OrthodoxImpl::easterMonday(Year y) {
-        static const Day EasterMonday[] = {
+        static const unsigned char EasterMonday[] = {
                  105, 118, 110, 102, 121, 106, 126, 118, 102,   // 1901-1909
             122, 114,  99, 118, 110,  95, 115, 106, 126, 111,   // 1910-1919
             103, 122, 107,  99, 119, 110, 123, 115, 107, 126,   // 1920-1929
@@ -277,9 +277,6 @@ namespace QuantLib {
     std::vector<Date> Calendar::holidayList(
         const Date& from, const Date& to, bool includeWeekEnds) const {
 
-        QL_REQUIRE(to>=from, "'from' date ("
-            << from << ") must be equal to or earlier than 'to' date ("
-            << to << ")");
         std::vector<Date> result;
         for (Date d = from; d <= to; ++d) {
             if (isHoliday(d) && (includeWeekEnds || !isWeekend(d.weekday())))
@@ -291,9 +288,6 @@ namespace QuantLib {
     std::vector<Date> Calendar::businessDayList(
         const Date& from, const Date& to) const {
 
-        QL_REQUIRE(to>=from, "'from' date ("
-            << from << ") must be equal to or earlier than 'to' date ("
-            << to << ")");
         std::vector<Date> result;
         for (Date d = from; d <= to; ++d) {
             if (isBusinessDay(d))

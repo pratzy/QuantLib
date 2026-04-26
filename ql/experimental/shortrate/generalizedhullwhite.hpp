@@ -11,7 +11,7 @@
  under the terms of the QuantLib license.  You should have received a
  copy of the license along with this program; if not, please email
  <quantlib-dev@lists.sf.net>. The license is also available online at
- <http://quantlib.org/license.shtml>.
+ <https://www.quantlib.org/license.shtml>.
 
  This program is distributed in the hope that it will be useful, but WITHOUT
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
@@ -79,8 +79,8 @@ namespace QuantLib {
             const std::vector<Date>& volstructure,
             const std::vector<Real>& speed,
             const std::vector<Real>& vol,
-            const ext::function<Real(Real)>& f = {},
-            const ext::function<Real(Real)>& fInverse = {});
+            const std::function<Real(Real)>& f = {},
+            const std::function<Real(Real)>& fInverse = {});
 
         template <class SpeedInterpolationTraits,class VolInterpolationTraits>
         GeneralizedHullWhite(
@@ -91,8 +91,8 @@ namespace QuantLib {
             const std::vector<Real>& vol,
             const SpeedInterpolationTraits &speedtraits,
             const VolInterpolationTraits &voltraits,
-            const ext::function<Real(Real)>& f = {},
-            const ext::function<Real(Real)>& fInverse = {}) :
+            const std::function<Real(Real)>& f = {},
+            const std::function<Real(Real)>& fInverse = {}) :
             OneFactorAffineModel(2), TermStructureConsistentModel(yieldtermStructure),
             speedstructure_(speedstructure), volstructure_(volstructure),
             a_(arguments_[0]), sigma_(arguments_[1]),
@@ -149,15 +149,15 @@ namespace QuantLib {
         Interpolation speed_;
         Interpolation vol_;
 
-        ext::function<Real (Time)> speed() const;
-        ext::function<Real (Time)> vol() const;
+        std::function<Real (Time)> speed() const;
+        std::function<Real (Time)> vol() const;
 
         Parameter& a_;
         Parameter& sigma_;
         Parameter phi_;
 
-        ext::function<Real(Real)> f_;
-        ext::function<Real(Real)> fInverse_;
+        std::function<Real(Real)> f_;
+        std::function<Real(Real)> fInverse_;
 
         static Real identity(Real x) {
             return x;
@@ -171,8 +171,8 @@ namespace QuantLib {
             const std::vector<Real>& vol,
             const SpeedInterpolationTraits &speedtraits,
             const VolInterpolationTraits &voltraits,
-            const ext::function<Real(Real)>& f,
-            const ext::function<Real(Real)>& fInverse)
+            const std::function<Real(Real)>& f,
+            const std::function<Real(Real)>& fInverse)
         {
             QL_REQUIRE(speedstructure.size()==speed.size(),
                 "mean reversion inputs inconsistent");
@@ -233,10 +233,10 @@ namespace QuantLib {
         : public GeneralizedHullWhite::ShortRateDynamics {
       public:
         Dynamics(Parameter fitting,
-                 const ext::function<Real(Time)>& alpha,
-                 const ext::function<Real(Time)>& sigma,
-                 ext::function<Real(Real)> f,
-                 ext::function<Real(Real)> fInverse)
+                 const std::function<Real(Time)>& alpha,
+                 const std::function<Real(Time)>& sigma,
+                 std::function<Real(Real)> f,
+                 std::function<Real(Real)> fInverse)
         : ShortRateDynamics(ext::shared_ptr<StochasticProcess1D>(
               new GeneralizedOrnsteinUhlenbeckProcess(alpha, sigma))),
           fitting_(std::move(fitting)), _f_(std::move(f)), _fInverse_(std::move(fInverse)) {}
@@ -253,8 +253,8 @@ namespace QuantLib {
 
       private:
         Parameter fitting_;
-        ext::function<Real(Real)> _f_;
-        ext::function<Real(Real)> _fInverse_;
+        std::function<Real(Real)> _f_;
+        std::function<Real(Real)> _fInverse_;
         struct identity {
             Real operator()(Real x) const {return x;};
         };
@@ -337,7 +337,7 @@ namespace QuantLib {
 
     namespace detail {
         template <class I1, class I2>
-        class LinearFlatInterpolationImpl
+        class LinearFlatInterpolationImpl final
             : public Interpolation::templateImpl<I1,I2> {
           public:
             LinearFlatInterpolationImpl(const I1& xBegin, const I1& xEnd,

@@ -13,7 +13,7 @@
  under the terms of the QuantLib license.  You should have received a
  copy of the license along with this program; if not, please email
  <quantlib-dev@lists.sf.net>. The license is also available online at
- <http://quantlib.org/license.shtml>.
+ <https://www.quantlib.org/license.shtml>.
 
  This program is distributed in the hope that it will be useful, but WITHOUT
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
@@ -29,6 +29,7 @@
 
 #include <ql/indexes/indexmanager.hpp>
 #include <ql/math/comparison.hpp>
+#include <ql/patterns/observable.hpp>
 #include <ql/time/calendar.hpp>
 
 namespace QuantLib {
@@ -41,7 +42,7 @@ namespace QuantLib {
                  possible inconsistencies due to "seeing in the
                  future"
     */
-    class Index : public Observable {
+    class Index : public Observable, public Observer {
       public:
         ~Index() override = default;
         //! Returns the name of the index.
@@ -61,9 +62,16 @@ namespace QuantLib {
             date of the fixing; no settlement days must be used.
         */
         virtual Real fixing(const Date& fixingDate, bool forecastTodaysFixing = false) const = 0;
+        //! returns a past fixing at the given date
+        /*! the date passed as arguments must be the actual calendar
+            date of the fixing; no settlement days must be used.
+        */
+        virtual Real pastFixing(const Date& fixingDate) const;
         //! returns the fixing TimeSeries
         const TimeSeries<Real>& timeSeries() const {
+            QL_DEPRECATED_DISABLE_WARNING
             return IndexManager::instance().getHistory(name());
+            QL_DEPRECATED_ENABLE_WARNING
         }
         //! check if index allows for native fixings.
         /*! If this returns false, calls to addFixing and similar
@@ -74,6 +82,10 @@ namespace QuantLib {
         /*! the date passed as arguments must be the actual calendar
             date of the fixing; no settlement days must be used.
         */
+        //! \name Observer interface
+        //@{
+        void update() override;
+        //@}
         virtual void addFixing(const Date& fixingDate, Real fixing, bool forceOverwrite = false);
         //! stores historical fixings from a TimeSeries
         /*! the dates in the TimeSeries must be the actual calendar
@@ -90,53 +102,39 @@ namespace QuantLib {
                         ValueIterator vBegin,
                         bool forceOverwrite = false) {
             checkNativeFixingsAllowed();
-            std::string tag = name();
-            TimeSeries<Real> h = IndexManager::instance().getHistory(tag);
-            bool noInvalidFixing = true, noDuplicatedFixing = true;
-            Date invalidDate, duplicatedDate;
-            Real nullValue = Null<Real>();
-            Real invalidValue = Null<Real>();
-            Real duplicatedValue = Null<Real>();
-            while (dBegin != dEnd) {
-                bool validFixing = isValidFixingDate(*dBegin);
-                Real currentValue = h[*dBegin];
-                bool missingFixing = forceOverwrite || currentValue == nullValue;
-                if (validFixing) {
-                    if (missingFixing)
-                        h[*(dBegin++)] = *(vBegin++);
-                    else if (close(currentValue, *(vBegin))) {
-                        ++dBegin;
-                        ++vBegin;
-                    } else {
-                        noDuplicatedFixing = false;
-                        duplicatedDate = *(dBegin++);
-                        duplicatedValue = *(vBegin++);
-                    }
-                } else {
-                    noInvalidFixing = false;
-                    invalidDate = *(dBegin++);
-                    invalidValue = *(vBegin++);
-                }
-            }
-            IndexManager::instance().setHistory(tag, h);
-            QL_REQUIRE(noInvalidFixing, "At least one invalid fixing provided: "
-                                            << invalidDate.weekday() << " " << invalidDate << ", "
-                                            << invalidValue);
-            QL_REQUIRE(noDuplicatedFixing, "At least one duplicated fixing provided: "
-                                               << duplicatedDate << ", " << duplicatedValue
-                                               << " while " << h[duplicatedDate]
-                                               << " value is already present");
+            IndexManager::instance().addFixings(
+                name(), dBegin, dEnd, vBegin, forceOverwrite,
+                [this](const Date& d) { return isValidFixingDate(d); });
         }
         //! clears all stored historical fixings
         void clearFixings();
 
+      protected:
+        ext::shared_ptr<Observable> notifier() const {
+            QL_DEPRECATED_DISABLE_WARNING
+            return IndexManager::instance().notifier(name());
+            QL_DEPRECATED_ENABLE_WARNING
+        }
+
       private:
         //! check if index allows for native fixings
         void checkNativeFixingsAllowed();
+
     };
 
     inline bool Index::hasHistoricalFixing(const Date& fixingDate) const {
+        QL_DEPRECATED_DISABLE_WARNING
         return IndexManager::instance().hasHistoricalFixing(name(), fixingDate);
+        QL_DEPRECATED_ENABLE_WARNING
+    }
+
+    inline Real Index::pastFixing(const Date& fixingDate) const {
+        QL_REQUIRE(isValidFixingDate(fixingDate), fixingDate << " is not a valid fixing date");
+        return timeSeries()[fixingDate];
+    }
+
+    inline void Index::update() {
+        notifyObservers();
     }
 
 }
